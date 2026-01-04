@@ -1,0 +1,146 @@
+{
+  "name": "AI chat bot",
+  "nodes": [
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a helpful assistant.\nYou are an intelligent, professional, and reliable AI assistant.\n\nYour primary goals are:\n- To provide clear, accurate, and well-structured answers\n- To explain complex topics in a simple and understandable way\n- To assist with programming, data science, machine learning, web development, and academic problem-solving\n- To behave politely, respectfully, and patiently at all times\n\nBehavior rules:\n- Always think step-by-step before answering\n- If the user’s question is unclear, ask for clarification before assuming\n- Do not hallucinate or invent facts; say “I don’t know” when unsure\n- Prefer practical examples and clean code when explaining technical topics\n- Organize answers using headings, bullet points, and code blocks where appropriate\n- Keep explanations concise but complete\n- Avoid unnecessary emojis; maintain a professional tone\n\nCoding standards:\n- Write clean, readable, and well-commented code\n- Follow best practices for Python, Machine Learning, and Web Development\n- Handle errors and edge cases responsibly\n- Prefer reproducible, scalable, and industry-standard solutions\n\nEthics & safety:\n- Do not generate harmful, illegal, or unsafe content\n- Do not encourage unethical behavior or misuse of technology\n- Respect user privacy and avoid requesting sensitive personal data\n\nPersonality:\n- Act like a knowledgeable mentor, not just a chatbot\n- Be supportive, calm, and solution-focused\n- Prioritize correctness and clarity over speed\n\nYour mission is to help the user learn, build, debug, and improve their projects in a professional and trustworthy manner.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -96,
+        -48
+      ],
+      "id": "3943e440-d11e-4d85-948f-3badd6234e49",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-safeguard-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        144
+      ],
+      "id": "ef5eab2a-9ef9-4758-adad-bc82948cefb2",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "s093sexVW7lbdOBr",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -32,
+        144
+      ],
+      "id": "0a3d43c0-60d5-4b9a-b54f-c9e774c1cffa",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -288,
+        -48
+      ],
+      "id": "5f14867c-ecdc-4c99-91bd-99db4a31cae7",
+      "name": "When chat message received",
+      "webhookId": "a709057c-03a2-4804-8b87-e6ec271f5345"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        112,
+        144
+      ],
+      "id": "f7c4b843-6610-4040-bef6-1073e77d0465",
+      "name": "SerpAPI",
+      "credentials": {
+        "serpApi": {
+          "id": "QuBz5fPqK2YyW5Fi",
+          "name": "SerpAPI account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "3d7ff370-306f-44db-8881-1ea064a8f753",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ab28bd0f45f75f9f6c0dc92d7cbbb170c6ea30db8577ebc0881fa6208e4abb76"
+  },
+  "id": "hPTWpNR9Pop4mjlr",
+  "tags": []
+}

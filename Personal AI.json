@@ -1,0 +1,414 @@
+{
+  "name": "Personal AI",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -480,
+        -48
+      ],
+      "id": "27523c21-b556-4c14-af0d-f0b0c0ac0611",
+      "name": "Telegram Trigger",
+      "webhookId": "8a08bbde-5c8b-4ada-ab38-a633542db7a5",
+      "credentials": {
+        "telegramApi": {
+          "id": "uOIMzHD2hDdtbEhx",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a helpful assistant.You are the user’s personal AI assistant on Telegram, designed to provide professional, accurate, and polite responses. \n\nBehavior Requirements:\n\n1. **Initial Greeting:** When the user says \"hi\" or starts the chat, always begin with:\n   \"Assalamualikum\"  \n\n2. **Date & Day:** Immediately after the greeting, provide today’s day of the week and date in this format:\n   \"Today is [Day], [Date Month Year].\"\n\n3. **Dhaka Temperature:** Next, provide the current temperature in Dhaka (°C). If live data is unavailable, provide the approximate value and indicate it is estimated.\n\n4. **Follow-up Assistance:** After the initial information, continue the conversation professionally:\n   - Answer questions accurately and concisely\n   - Maintain a polite and professional tone\n   - Avoid slang or casual expressions\n   - Add brief explanations or suggestions when appropriate\n\n5. **Error Handling:**  \n   - If you cannot access live data (e.g., temperature), inform the user politely:  \n     \"I am unable to fetch live temperature data at the moment. The current temperature in Dhaka is approximately [XX]°C.\"\n\nExample Interaction:\n\nUser: \"hi\"  \nBot: \n\"Assalamualikum.  \nToday is Saturday, 3 January 2026.  \nThe current temperature in Dhaka is approximately 23°C.\"  \n\nUser: \"Can you summarize the latest news for me?\"  \nBot: \"Certainly. Here is a concise summary of the latest news: …\"\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        256,
+        -48
+      ],
+      "id": "0e2c5204-0ab8-4ce1-923a-83c3cb1bcb76",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1104,
+        -48
+      ],
+      "id": "f6b7aeaf-da93-4ef5-82bd-9673c32c510a",
+      "name": "Send a text message",
+      "webhookId": "ef2ecfc9-9d8b-4f23-8a95-e6a5915caa1f",
+      "credentials": {
+        "telegramApi": {
+          "id": "uOIMzHD2hDdtbEhx",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        176
+      ],
+      "id": "7051a728-0733-46c5-a6ca-97e14ad5fbf9",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "l6ujwrL1qc3yopni",
+          "name": "Groq account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        176
+      ],
+      "id": "c5d8d874-1b1a-4c6d-bcac-9a8a870997e2",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        0,
+        176
+      ],
+      "id": "a7004a43-34c2-45b6-897f-7f77cfd0668f",
+      "name": "SerpAPI",
+      "credentials": {
+        "serpApi": {
+          "id": "QuBz5fPqK2YyW5Fi",
+          "name": "SerpAPI account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        128,
+        176
+      ],
+      "id": "a51da14d-9f20-48a6-ba2a-32553903b800",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        176
+      ],
+      "id": "de4d7d15-5eef-405e-af2e-73f55582852b",
+      "name": "Get Email",
+      "webhookId": "0c2bfbf7-6e4e-4f7b-82c9-660ef017dfc8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "task": "MDkxMDAwOTYyNDc3NjgzOTk5Mzc6MDow",
+        "title": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}",
+        "additionalFields": {
+          "notes": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Notes', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleTasksTool",
+      "typeVersion": 1,
+      "position": [
+        384,
+        176
+      ],
+      "id": "5d15bee7-6e53-42fa-8c3d-05cfc91aa31a",
+      "name": "Create a task in Google Tasks",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "GQwt3PrcTsApssit",
+          "name": "Google Tasks account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "task": "MDkxMDAwOTYyNDc3NjgzOTk5Mzc6MDow",
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleTasksTool",
+      "typeVersion": 1,
+      "position": [
+        512,
+        176
+      ],
+      "id": "837fcbef-8edb-4f2c-b12c-597f4c5fc770",
+      "name": "Get many tasks in Google Tasks",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "GQwt3PrcTsApssit",
+          "name": "Google Tasks account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "task": "MDkxMDAwOTYyNDc3NjgzOTk5Mzc6MDow",
+        "taskId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Task_ID', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.googleTasksTool",
+      "typeVersion": 1,
+      "position": [
+        640,
+        176
+      ],
+      "id": "5d61fe82-1982-44b4-8443-3796becb321a",
+      "name": "Delete a task in Google Tasks",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "GQwt3PrcTsApssit",
+          "name": "Google Tasks account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "task": "MDkxMDAwOTYyNDc3NjgzOTk5Mzc6MDow",
+        "taskId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Task_ID', ``, 'string') }}",
+        "updateFields": {}
+      },
+      "type": "n8n-nodes-base.googleTasksTool",
+      "typeVersion": 1,
+      "position": [
+        768,
+        176
+      ],
+      "id": "e994d603-9c69-4d26-8466-3d71c3db7b26",
+      "name": "Update a task in Google Tasks",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "GQwt3PrcTsApssit",
+          "name": "Google Tasks account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "n8n.workflow.ai@gmail.com",
+          "mode": "list",
+          "cachedResultName": "n8n.workflow.ai@gmail.com"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        896,
+        176
+      ],
+      "id": "08e5c40c-effd-4e75-8d9a-38cc9145a510",
+      "name": "Get availability in a calendar in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "jyr9Bxp5ScSHtp5q",
+          "name": "Google Calendar account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Email": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a task in Google Tasks": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many tasks in Google Tasks": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a task in Google Tasks": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a task in Google Tasks": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get availability in a calendar in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "cee203c1-ee50-4270-8ba8-ff1c1134b464",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ab28bd0f45f75f9f6c0dc92d7cbbb170c6ea30db8577ebc0881fa6208e4abb76"
+  },
+  "id": "QGP1HZFzxgEVD4Mc",
+  "tags": []
+}

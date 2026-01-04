@@ -1,0 +1,589 @@
+{
+  "name": "Restaurent AI chat bot",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -272,
+        -80
+      ],
+      "id": "df94735b-fc93-413e-a778-b14ec7a6bc1a",
+      "name": "When chat message received",
+      "webhookId": "8a910177-e0fe-4bda-80f7-96b1574acc7a"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are a helpful restaurant and calorie tracking assistant.\nToday's date and time is {{ $now }}.\n\nYour responsibilities are:\n\n1. Food & Calorie Tracking:\n- When the user eats or mentions food consumption, add it to the daily calorie tracker.\n- If the user does NOT specify calories for a food item, estimate the calories using your general knowledge before adding it to the tracker.\n- Keep a running list of all food items eaten today with quantity and calories.\n\n2. Calorie Summary:\n- If the user asks: \"How many calories did I eat today?\"\n  → Respond with the total calories consumed today.\n  → Also show a breakdown of food items with quantity and calories.\n\n3. Food List (UPDATED):\n- If the user asks questions like:\n  \"What food items do you have?\"\n  \"Tell me the food items in your list\"\n  \"কি কি খাবার আছে?\"\n- Then:\n  → Fetch food names ONLY from the \"food items\" sheet of the \"Calorie Tracker\" Excel/Google Sheet.\n  → Display all food item names from that sheet.\n  → Do NOT invent or guess food items.\n  → Do NOT use memory-based food lists.\n\n4. Intent Detection:\n- Detect the user's intent based on their message:\n  - Ordering food\n  - Calorie tracking\n  - Food list\n- Handle each intent separately and correctly.\n\n5. Restaurant Ordering:\n- When the user wants to place an order, collect the following information step by step:\n  - customer_name\n  - email\n  - phone\n  - ordered_items (item name and quantity)\n  - order_type (Delivery or Dine-in)\n  - address (ONLY if order_type is Delivery)\n  - order_date\n\nIMPORTANT RULES:\n- Do NOT return JSON immediately when the user wants to order.\n- Ask questions step by step to collect missing information.\n- Store previously provided answers and do not ask for them again.\n- ONLY return final JSON when ALL required information is collected and confirmed.\n\n-------------------\nORDER CONVERSATION FLOW\n-------------------\n\n1. If the user wants to order food and no information is collected yet:\n   → Ask for customer_name.\n\n2. After customer_name is collected:\n   → Ask for email.\n\n3. After email is collected:\n   → Ask for phone number.\n\n4. After phone number is collected:\n   → Ask for ordered_items including quantity  \n     (example: \"2 pizzas and 1 burger\").\n\n5. After ordered_items are collected:\n   → Ask whether the order is Delivery or Dine-in.\n\n6. If order_type is Delivery:\n   → Ask for delivery address.\n\n7. Ask for Order Date:\n   → Ask: \"On which date do you want to place this order?\"\n   → If the user does not specify a date, use today's date.\n\n8. Order Confirmation:\n- Summarize the full order in plain text including the order date.\n- Ask: \"Do you want to confirm this order? (Yes/No)\"\n\n9. Final Output & Storage (NEW):\n- When ALL required information is collected AND the user confirms the order:\n  → Respond ONLY in valid JSON.\n  → This JSON will be used to append a new row in the\n    \"order\" sheet of the \"Calorie Tracker\" Excel/Google Sheet.\n  → Do NOT add any extra text.\n\nIf the user asks something unrelated (calories, menu explanation, etc.), respond normally.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        320,
+        -80
+      ],
+      "id": "1ac790ac-f386-46eb-bee5-0776ec687689",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-safeguard-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        144
+      ],
+      "id": "04740ed8-7258-4c16-a015-78a0b1fd21e5",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "yolkGsx8Aj80G7rl",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -64,
+        144
+      ],
+      "id": "abe33d44-31b6-430e-9ddd-ed3f73b5468e",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Ad or update the calorie tracker",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1LaztdMf4Ob-rpCvoa9Fj1J3nlisO75O6LkpNLdTu0xA",
+          "mode": "list",
+          "cachedResultName": "Calorie Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LaztdMf4Ob-rpCvoa9Fj1J3nlisO75O6LkpNLdTu0xA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LaztdMf4Ob-rpCvoa9Fj1J3nlisO75O6LkpNLdTu0xA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Food": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Food__using_to_match_', ``, 'string') }}",
+            "Calories": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Calories', ``, 'string') }}",
+            "Date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Date', `Convert the time format so it look like\n this: \"dd-mm-yyyy hh:mm \"`, 'string') }}"
+          },
+          "matchingColumns": [
+            "Food"
+          ],
+          "schema": [
+            {
+              "id": "Food",
+              "displayName": "Food",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Calories",
+              "displayName": "Calories",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        64,
+        144
+      ],
+      "id": "68ddc9e2-cabc-4436-a8c0-98a431eef0b5",
+      "name": "Add or update",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9nmUQyXVqzobJaV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "search the calorie tracker",
+        "documentId": {
+          "__rl": true,
+          "value": "1LaztdMf4Ob-rpCvoa9Fj1J3nlisO75O6LkpNLdTu0xA",
+          "mode": "list",
+          "cachedResultName": "Calorie Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LaztdMf4Ob-rpCvoa9Fj1J3nlisO75O6LkpNLdTu0xA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LaztdMf4Ob-rpCvoa9Fj1J3nlisO75O6LkpNLdTu0xA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        144
+      ],
+      "id": "f0d5e35a-7350-4d77-83a2-03880831f9c0",
+      "name": "search calorie tracker",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9nmUQyXVqzobJaV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "n8n.workflow.ai@gmail.com",
+          "mode": "list",
+          "cachedResultName": "n8n.workflow.ai@gmail.com"
+        },
+        "returnAll": true,
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        448,
+        144
+      ],
+      "id": "f2691164-6f88-4c83-ab4c-b48b54df736e",
+      "name": "Search google",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "jyr9Bxp5ScSHtp5q",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "n8n.workflow.ai@gmail.com",
+          "mode": "list",
+          "cachedResultName": "n8n.workflow.ai@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        144
+      ],
+      "id": "2dfdc16d-c3ab-40a3-8d0e-567347023e79",
+      "name": "add to calender",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "jyr9Bxp5ScSHtp5q",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', `signoff like this:\nBest regards,\nMd Asif Ikbal`, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        144
+      ],
+      "id": "5526fdd0-07f4-4fb8-a95d-8aa948306693",
+      "name": "Send a message in Gmail",
+      "webhookId": "62202808-a1e5-4c91-90d6-a242b26f5909",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        752,
+        144
+      ],
+      "id": "eceb4aba-1dc9-4ec1-ba29-98bc5d0a279d",
+      "name": "SerpAPI",
+      "credentials": {
+        "serpApi": {
+          "id": "QuBz5fPqK2YyW5Fi",
+          "name": "SerpAPI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## I'm a note \n1. I just ate two slice of pizza. Can you add that to my calorie tracker ?\n\n2.How many calories I eat  today ?\n\n3. tell me the foods item which you have in your list ?\n\n",
+        "height": 368
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -704,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "212957bb-6a0f-4ec3-81c0-23d1ec5e02ed",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KcMq76LV--1UUwmbxmhRe_WqahzsAMIe1EBS5m9gCi8",
+          "mode": "list",
+          "cachedResultName": "Foods Items",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KcMq76LV--1UUwmbxmhRe_WqahzsAMIe1EBS5m9gCi8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KcMq76LV--1UUwmbxmhRe_WqahzsAMIe1EBS5m9gCi8/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        896,
+        144
+      ],
+      "id": "de1c12e2-fc14-4854-b666-3adf9807f653",
+      "name": "foods items",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9nmUQyXVqzobJaV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1LaztdMf4Ob-rpCvoa9Fj1J3nlisO75O6LkpNLdTu0xA",
+          "mode": "list",
+          "cachedResultName": "Calorie Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LaztdMf4Ob-rpCvoa9Fj1J3nlisO75O6LkpNLdTu0xA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 471121098,
+          "mode": "list",
+          "cachedResultName": "order",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LaztdMf4Ob-rpCvoa9Fj1J3nlisO75O6LkpNLdTu0xA/edit#gid=471121098"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "customer_name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('customer_name__using_to_match_', ``, 'string') }}",
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', ``, 'string') }}",
+            "phone number": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone_number', ``, 'string') }}",
+            "ordered_items": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ordered_items', ``, 'string') }}",
+            "quantity": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('quantity', ``, 'string') }}",
+            "address": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('address', ``, 'string') }}",
+            "date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('date', `Convert the time format so it look like\n this: \"dd-mm-yyyy hh:mm \"`, 'string') }}"
+          },
+          "matchingColumns": [
+            "customer_name"
+          ],
+          "schema": [
+            {
+              "id": "customer_name",
+              "displayName": "customer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone number",
+              "displayName": "phone number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ordered_items",
+              "displayName": "ordered_items",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "quantity",
+              "displayName": "quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "address",
+              "displayName": "address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1056,
+        144
+      ],
+      "id": "ad4fa7c9-7f79-4c02-be61-5aab99e2c846",
+      "name": "Add or update1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9nmUQyXVqzobJaV",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add or update": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search calorie tracker": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "add to calender": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search google": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "foods items": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add or update1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "09922a12-21b5-4721-a3a6-dd6c7ebecf14",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ab28bd0f45f75f9f6c0dc92d7cbbb170c6ea30db8577ebc0881fa6208e4abb76"
+  },
+  "id": "NeyzUqqb3yRJm8ge",
+  "tags": []
+}
