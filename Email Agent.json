@@ -1,0 +1,758 @@
+{
+  "name": "Email Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1664,
+        464
+      ],
+      "id": "8c1c1751-88d4-4253-8bb6-afc3391c7bb4",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.snippet }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "High Priority",
+              "description": "=You are an email label assistant.  \nDetermine whether the following message should be labeled “High Priority.”  \n“High Priority” means it is urgent, flagged or starred, from a VIP (executive, key client), or contains language demanding immediate action (e.g., “urgent,” “ASAP,” “sign off by EOD”).  \n"
+            },
+            {
+              "category": "Finance/Billing",
+              "description": "=You are an email Label assistant. \n\nDecide if the following message should be labeled “Finance/Billing.”  \n“Finance/Billing” covers invoices, billing statements, payment requests, account charges, or communications from your accounting/finance department domain.  \n"
+            },
+            {
+              "category": "Customer Support",
+              "description": "=You are an email Label assistant.  \n\nDecide if the following message should be labeled “Customer Support.”  \n“Customer Support” covers help tickets, bug reports, troubleshooting questions, or any request for assistance, especially from a support portal domain.  \n"
+            },
+            {
+              "category": "Promotion",
+              "description": "=You are an email Label assistant.  \n\nDecide if the following message should be labeled “Promotion.”  \n“Promotion” covers marketing messages, discount offers, sales announcements, newsletters, and any mail containing unsubscribe links.  \n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        -1440,
+        464
+      ],
+      "id": "88041172-6b9b-4114-90cc-989e83958d72",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_3643623435137076028"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1056,
+        -144
+      ],
+      "id": "2fe52526-962d-4159-b6d8-3b840c81bab9",
+      "name": "High Priority Label Mark",
+      "webhookId": "bac23fb7-11e5-4b26-a8b6-ad6bcea2a843",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_7033054525123623542"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1056,
+        256
+      ],
+      "id": "d5f1bf8d-ac87-427a-afa4-74ff2641d06f",
+      "name": "Finance Label Mark",
+      "webhookId": "bac23fb7-11e5-4b26-a8b6-ad6bcea2a843",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_6694497367107323426"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1056,
+        656
+      ],
+      "id": "4b922127-f07c-4e16-871f-096c25541939",
+      "name": "Customer Support Label Mark",
+      "webhookId": "bac23fb7-11e5-4b26-a8b6-ad6bcea2a843",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_7371839579966058978"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1056,
+        960
+      ],
+      "id": "802f68c6-fec6-41de-8261-c581caa41f05",
+      "name": "Promotion Label Mark",
+      "webhookId": "bac23fb7-11e5-4b26-a8b6-ad6bcea2a843",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"subject\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n        \"body\": {\n\t\t\t\"type\": \"string\"\n\t\t}\n\t}\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -688,
+        -32
+      ],
+      "id": "560ac5fd-5b2d-49f5-88f1-3a060e3b3680",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Text Classifier').item.json.snippet }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert email drafting assistant. When given a “High Priority” message, your job is to compose a clear, professional, and concise reply on the user’s behalf. Your draft should:\n\n- Address every question or request raised in the original email.  \n- Use a respectful, business-appropriate tone.  \n- Clearly outline any next steps or action items.  \n- Include a suggested subject line. \n\nThe user will review and adjust your draft before sending it to the original sender.  \n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -848,
+        -256
+      ],
+      "id": "07786a9e-7882-400b-ae43-9e041b2e0877",
+      "name": "Create Draft"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Text Classifier').item.json.snippet }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert email drafting assistant. When provided with a financial summary containing key details (invoice/reference number, amount due, due date, payment instructions, etc.), compose a clear, professional email to the Accounts team that:\n\n- Opens with a brief context line (e.g., “Please see the summary below from the latest finance communication.”)  \n- Presents the summary in concise bullet points.  \n- Clearly requests any necessary actions (e.g., “Please process payment by the due date” or “Confirm receipt of this invoice”).  \n- Closes with a polite sign-off and your name or role.\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -832,
+        160
+      ],
+      "id": "40e7a53e-c27f-4566-b817-1c70c732c3e6",
+      "name": "Summarize"
+    },
+    {
+      "parameters": {
+        "sendTo": "n8n.workflow.ai@gmail.com",
+        "subject": "={{ $json.output.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.output.body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -464,
+        256
+      ],
+      "id": "286c9abe-1733-41c2-9fd6-4a97a4219639",
+      "name": "Send Mail",
+      "webhookId": "a5340f9a-d380-49da-b534-84f0e7bbe067",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.output.subject }}",
+        "message": "={{ $json.output.body }}",
+        "options": {
+          "sendTo": "={{ $('Gmail Trigger').item.json.From }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -464,
+        -144
+      ],
+      "id": "c48ce560-fec1-4c72-a478-e003a891642f",
+      "name": "Draft Mail",
+      "webhookId": "23e7455d-3ef0-4c08-a553-5ff4e75f6648",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Text Classifier').item.json.snippet }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert customer support email drafting assistant. When given a “Customer Support” message, your job is to compose a clear, empathetic, and solution-oriented reply on the user’s behalf. Your draft should:\n\n- Begin by acknowledging the customer’s issue or question.  \n- Restate or summarize their main concern to show understanding.  \n- Provide step-by-step guidance or the next steps you will take to resolve the issue.  \n- Offer any additional troubleshooting tips or resources if appropriate.  \n- Close with a friendly and helpful tone, inviting further questions as needed.  \n- Include a suggested subject line.\n\nThe user will review and adjust your draft before sending it to the original sender.\n \n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -848,
+        560
+      ],
+      "id": "5609af9c-0d06-4a51-aebf-c74dd5dba7be",
+      "name": "Customer Support Reply"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Text Classifier').item.json.From }}",
+        "subject": "={{ $json.output.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.output.body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -464,
+        656
+      ],
+      "id": "b95aa781-86d6-4567-aa99-493744a9ebdd",
+      "name": "Auto Reply",
+      "webhookId": "78a1b452-05a3-48dc-8adf-70ae45ffc46b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a promotional email summarization assistant. When provided with a promotional message, extract and summarize the key marketing details in a concise, bullet-point format. Focus on elements such as:\n\n- Offer or deal description (e.g., “50% off spring sale”)  \n- Discount amount or percentage  \n- Promo code (if any)  \n- Validity date or expiration  \n- Call-to-action (e.g., “Shop now,” “Sign up”)  \n- Unsubscribe or opt-out instructions  \n\nOmit unrelated content and conversational fluff.\n\n**Input:**  \n{{ $('Text Classifier').item.json.snippet }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -848,
+        960
+      ],
+      "id": "f338d751-8ad4-467a-ab1e-0727e96c883f",
+      "name": "Promotion Summary",
+      "credentials": {
+        "openAiApi": {
+          "id": "y7r45fDAI088dFTA",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "5452856965",
+        "text": "=You have got High Priority Mail from - {{ $('Text Classifier').item.json.From }} \n## Subject\n{{ $('Text Classifier').item.json.Subject }}\n\n## Actual Mail\n{{ $('Gmail Trigger').item.json.snippet }}\n\n## Draft Mail\n{{ $('Create Draft').item.json.output.body }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -240,
+        -144
+      ],
+      "id": "47511172-0e09-4e22-8545-75e31305b60b",
+      "name": "Draft Mail Notify",
+      "webhookId": "5ae7c631-6cd8-4475-ad73-07f66173e011",
+      "credentials": {
+        "telegramApi": {
+          "id": "uOIMzHD2hDdtbEhx",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "5452856965",
+        "text": "=You have got Finance related mail from - {{ $('Gmail Trigger').item.json.From }}\n\nWe have send the below summary of mail to Finance team\n{{ $('Summarize').item.json.output.body }}\n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -240,
+        256
+      ],
+      "id": "6a08a29f-fa8f-4cbe-b5a2-7bc4a1260fd8",
+      "name": "Mail Send Notify",
+      "webhookId": "5ae7c631-6cd8-4475-ad73-07f66173e011",
+      "credentials": {
+        "telegramApi": {
+          "id": "uOIMzHD2hDdtbEhx",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "5452856965",
+        "text": "=You have got customer support mail from - {{ $('Gmail Trigger').item.json.From }}\n\nWe have auto replied below mail back:\n{{ $('Customer Support Reply').item.json.output.body }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -240,
+        656
+      ],
+      "id": "6aa65856-b79b-488b-bf4a-812745bf6ed8",
+      "name": "Auto Reply Notify",
+      "webhookId": "5ae7c631-6cd8-4475-ad73-07f66173e011",
+      "credentials": {
+        "telegramApi": {
+          "id": "uOIMzHD2hDdtbEhx",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "5452856965",
+        "text": "=You have got Promotion Mail from - {{ $('Text Classifier').item.json.From }}\n\nHere is the Summary of the Mail:\n{{ $json.message.content }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        960
+      ],
+      "id": "db988420-817b-4335-99f9-e24fa454d6cc",
+      "name": "Promotion summary notify",
+      "webhookId": "5ae7c631-6cd8-4475-ad73-07f66173e011",
+      "credentials": {
+        "telegramApi": {
+          "id": "uOIMzHD2hDdtbEhx",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-safeguard-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -1520,
+        672
+      ],
+      "id": "a7b84f8e-472f-4802-81ac-ed37ff929a59",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "l6ujwrL1qc3yopni",
+          "name": "Groq account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-safeguard-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        0
+      ],
+      "id": "feb91eb7-cddd-4f9b-950e-c5635af81f1c",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "l6ujwrL1qc3yopni",
+          "name": "Groq account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-safeguard-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        368
+      ],
+      "id": "daf4d67f-4309-404a-a8d7-4ecdb4eeb537",
+      "name": "Groq Chat Model2",
+      "credentials": {
+        "groqApi": {
+          "id": "l6ujwrL1qc3yopni",
+          "name": "Groq account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-safeguard-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        800
+      ],
+      "id": "5b21d115-d032-4351-8dc6-aaaa47defe0c",
+      "name": "Groq Chat Model3",
+      "credentials": {
+        "groqApi": {
+          "id": "l6ujwrL1qc3yopni",
+          "name": "Groq account 4"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "High Priority Label Mark",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Finance Label Mark",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Customer Support Label Mark",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Promotion Label Mark",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "High Priority Label Mark": {
+      "main": [
+        [
+          {
+            "node": "Create Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Create Draft",
+            "type": "ai_outputParser",
+            "index": 0
+          },
+          {
+            "node": "Summarize",
+            "type": "ai_outputParser",
+            "index": 0
+          },
+          {
+            "node": "Customer Support Reply",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Draft": {
+      "main": [
+        [
+          {
+            "node": "Draft Mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finance Label Mark": {
+      "main": [
+        [
+          {
+            "node": "Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize": {
+      "main": [
+        [
+          {
+            "node": "Send Mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer Support Label Mark": {
+      "main": [
+        [
+          {
+            "node": "Customer Support Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer Support Reply": {
+      "main": [
+        [
+          {
+            "node": "Auto Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Promotion Label Mark": {
+      "main": [
+        [
+          {
+            "node": "Promotion Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Mail": {
+      "main": [
+        [
+          {
+            "node": "Mail Send Notify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Promotion Summary": {
+      "main": [
+        [
+          {
+            "node": "Promotion summary notify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto Reply": {
+      "main": [
+        [
+          {
+            "node": "Auto Reply Notify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft Mail": {
+      "main": [
+        [
+          {
+            "node": "Draft Mail Notify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Create Draft",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarize",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Customer Support Reply",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "2370cd72-d9fb-4a10-b044-d127ad172b01",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ab28bd0f45f75f9f6c0dc92d7cbbb170c6ea30db8577ebc0881fa6208e4abb76"
+  },
+  "id": "L7n8nOkBqdXRwqT1",
+  "tags": []
+}
