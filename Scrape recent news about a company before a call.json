@@ -1,0 +1,387 @@
+{
+  "name": "Scrape recent news about a company before a call",
+  "nodes": [
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "apiKey",
+              "stringValue": "32aa914c947342169c4998b6701a77e0"
+            },
+            {
+              "name": "newsAge",
+              "type": "numberValue",
+              "numberValue": "10"
+            },
+            {
+              "name": "maxArticles",
+              "stringValue": "20"
+            },
+            {
+              "name": "emails",
+              "stringValue": "n8n.workflow.ai@gmail.com"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "659e9224-5204-4a08-a282-ac8b74416fae",
+      "name": "Setup",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        224,
+        368
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "companyName",
+              "stringValue": "={{ $json.summary.toLowerCase().replace('meeting with', '').replace('call with', '').trim() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f158278f-3372-4624-bb60-a6569fcadafa",
+      "name": "Extract company name",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        912,
+        160
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "content": "### Latest company news before a call\nThis workflow will send you a list of latest news about a company for every meeting in your calendar each day, keeping you up to date with your leads and meeting partners.\n\n\n### 📌 কলের আগে কোম্পানির সর্বশেষ খবর\nএই workflow-টা এমনভাবে তৈরি করা হয়েছে যাতে\n👉 প্রতিদিন তোমার ক্যালেন্ডারের প্রতিটা মিটিংয়ের আগে,\n👉 যে কোম্পানির সাথে মিটিং বা কল আছে,\n👉 সেই কোম্পানির সর্বশেষ খবরগুলোর একটি তালিকা\n👉 স্বয়ংক্রিয়ভাবে তোমার কাছে পাঠানো হয়।\n\n### 🧠 এটা কেন কাজে লাগে?\nএর ফলে তুমি—\n✅ মিটিংয়ের আগে কোম্পানি সম্পর্কে আপডেট থাকবে\n✅ লিড (potential client) সম্পর্কে নতুন তথ্য জানতে পারবে\n✅ মিটিং বা কলের সময় আরও স্মার্ট ও প্রফেশনাল কথা বলতে পারবে\n✅ হঠাৎ কোনো বড় খবর থাকলে আগে থেকেই জানতে পারবে\n\n### 🗓️ এটা কীভাবে কাজ করে? (সহজভাবে)\nপ্রতিদিন তোমার ক্যালেন্ডার চেক করে\nআজকে যেসব মিটিং আছে সেগুলো দেখে\nমিটিংয়ের কোম্পানির নাম দিয়ে সর্বশেষ নিউজ খোঁজে\nতারপর সব খবর একটা লিস্ট আকারে পাঠিয়ে দেয়\n",
+        "height": 560,
+        "width": 500,
+        "color": 4
+      },
+      "id": "be0dfdf1-8660-46cd-80a2-14a6733a08cb",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -560,
+        288
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "2be00255-87ae-4854-97f3-11e0935d1f93",
+      "name": "Every morning @ 7",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        0,
+        368
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "bcfb06b1-d365-43a8-9802-869529baca98",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              },
+              "leftValue": "={{ $json.summary.toLowerCase() }}",
+              "rightValue": "call with"
+            },
+            {
+              "id": "4ea43ccf-d586-4985-87db-fc1e9f734351",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              },
+              "leftValue": "={{ $json.summary.toLowerCase() }}",
+              "rightValue": "meeting with"
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "716709be-0513-4453-8e83-e109012a7515",
+      "name": "Filter meetings",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        640,
+        368
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "=https://newsapi.org/v2/everything?apiKey={{ $('Setup').first().json.apiKey }}&q={{ $json.companyName }}&from={{ DateTime.now().minus({ days: $('Setup').first().json.newsAge }).toFormat('yyyy-MM-dd') }}&sortBy=publishedAt&language=en&pageSize={{ $('Setup').first().json.maxArticles }}&searchIn=title",
+        "options": {}
+      },
+      "id": "0789d0e1-825e-49fd-9aa4-76752083fb6f",
+      "name": "Get latest news",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1104,
+        160
+      ],
+      "typeVersion": 4.1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "let html = `<table style=\"width: 100%\">`;\nhtml += '</table>';\n\nfor(article of $input.item.json.articles) {\n  console.log(article)\n  html += `\n    <tr>\n      <td style=\"display: flex; background-color: #f2f4f8; font-family: sans-serif; padding: 0.3em 0.5em\">\n        <div style=\"padding: 1em\">\n          <a style=\"display: block; margin-bottom: 10px; font-size: 1.2em\" href=\"${article.url}\">${article.title}</a>\n          <i>\n            ${article.description ? article.description : article.content}\n          </i>\n          <div style=\"margin-top: 1em\">\n            ${ article.source?.name ? '<b>Source:</b> ' + article.source?.name : '' }\n          </div>\n        </div>\n      </td>\n    </tr>\n  `\n}\nreturn { \"html\": html };"
+      },
+      "id": "b4e5657d-724e-4d96-a4c7-d947e1f4d948",
+      "name": "Format for email",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1312,
+        160
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Setup').first().json.emails }}",
+        "subject": "=Latest news for '{{ $('Extract company name').item.json.summary }}'",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "d10e8b88-c704-4c1f-a830-6bfa6f31165d",
+      "name": "Send news",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        1504,
+        160
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "874eda1b-8ad8-4fe3-a3bd-843427c19bf7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n### Configure your workflow here\n1. `apiKey` - Your API key for [News API](https://newsapi.org)\n2. `newsAge` - How old should news be, in days\n3. `maxArticles` - Number of articles that will be sent, max 100\n4. `emails`- List of email addresses that should receive the news, separated by commas\n\n\nকোন API দিয়ে খবর আনবে, কত দিনের খবর, কয়টা খবর, আর কাদের ইমেইলে পাঠাবে",
+        "height": 559
+      },
+      "id": "31a80367-1901-4826-a46e-fea3d6515444",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        160,
+        320
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n\n\n\nThis will get all meetings that start with *Meeting with* or *Call with* but feel free to update the filter to suit your needs.\n\nThis will get all meetings\n→ এটা সব মিটিং খুঁজে বের করবে\n\nthat start with \"Meeting with\" or \"Call with\"\n→ যেসব মিটিং-এর নাম এই দুইটা শব্দ দিয়ে শুরু\n\nbut feel free to update the filter\n→ তবে চাইলে তুমি এই ফিল্টার বদলাতে পারো\n\nto suit your needs\n→ নিজের প্রয়োজন অনুযায়ী",
+        "height": 547,
+        "width": 232
+      },
+      "id": "f14f48ee-5611-4ae9-bbf6-a4ef3c5d39fa",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        608,
+        352
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "55040f9c-3482-4afd-ab5f-8b8e6f597b0f",
+      "name": "No meetings today",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        1520,
+        384
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "n8n.workflow.ai@gmail.com",
+          "mode": "list",
+          "cachedResultName": "n8n.workflow.ai@gmail.com"
+        },
+        "options": {
+          "timeMin": "={{ $today }}",
+          "timeMax": "={{ $today.plus({ days: 1 }) }}",
+          "singleEvents": true
+        }
+      },
+      "id": "f083ce0b-e1d4-4d06-bb8c-4b9e126552ca",
+      "name": "Get meetings for today",
+      "type": "n8n-nodes-base.googleCalendar",
+      "position": [
+        464,
+        368
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "jyr9Bxp5ScSHtp5q",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "এই URL টি NewsAPI থেকে\nনির্দিষ্ট কোম্পানির নাম দিয়ে,\nনির্দিষ্ট কয়দিনের মধ্যে প্রকাশিত,\nইংরেজি,\nসর্বশেষ নির্দিষ্ট সংখ্যক নিউজ\nশুধু title-এ খুঁজে এনে দেয়",
+        "height": 224,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1072,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "ad5fa4d4-6402-4583-80a2-1a3a294b7040",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "এই কোড = খবরগুলোকে সুন্দর ইমেইল/HTML রিপোর্ট বানানোর মেশিন",
+        "height": 96,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1280,
+        32
+      ],
+      "typeVersion": 1,
+      "id": "4117571c-5ff1-42c9-a822-d3f9d7388c11",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Setup": {
+      "main": [
+        [
+          {
+            "node": "Get meetings for today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter meetings": {
+      "main": [
+        [
+          {
+            "node": "Extract company name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No meetings today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get latest news": {
+      "main": [
+        [
+          {
+            "node": "Format for email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format for email": {
+      "main": [
+        [
+          {
+            "node": "Send news",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every morning @ 7": {
+      "main": [
+        [
+          {
+            "node": "Setup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract company name": {
+      "main": [
+        [
+          {
+            "node": "Get latest news",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get meetings for today": {
+      "main": [
+        [
+          {
+            "node": "Filter meetings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "fd9c4fc3-eeab-4dd0-a740-5cc489bfb12a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ab28bd0f45f75f9f6c0dc92d7cbbb170c6ea30db8577ebc0881fa6208e4abb76"
+  },
+  "id": "CLoGrKT57yVBCMet",
+  "tags": []
+}
