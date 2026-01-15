@@ -1,0 +1,913 @@
+{
+  "name": "Customer Support Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "get",
+        "threadId": "={{ $json.threadId }}",
+        "options": {}
+      },
+      "id": "f7b44ccb-b281-4bfa-8cc0-04166e2ed4b0",
+      "name": "Get Thread History",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        928,
+        368
+      ],
+      "webhookId": "724bfe35-1083-4f30-9687-69a9e2c16467",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// N8N Code Node - Extract email and clean message from Gmail JSON\nconst data = $input.first().json;\n\n// Function to extract email from \"Name <email>\" format\nfunction extractEmail(fromField) {\n  const match = fromField.match(/<(.+?)>/);\n  return match ? match[1] : fromField;\n}\n\n// Function to extract clean message from snippet\nfunction extractMessage(snippet) {\n  // Split by common email reply patterns and take the first part\n  let message = snippet.split(' On ')[0];\n  message = message.split('&lt;')[0];\n  message = message.split('--')[0];\n  return message.trim();\n}\n\nconst result = [];\n\n// Check if data exists and has the expected structure\nif (data && Array.isArray(data) && data.length > 0 && data[0].messages) {\n  // Process each message in the thread\n  data[0].messages.forEach(message => {\n    result.push({\n      mail: extractEmail(message.From),\n      message: extractMessage(message.snippet)\n    });\n  });\n} else if (data && data.messages) {\n  // Handle case where data is directly the object (not in array)\n  data.messages.forEach(message => {\n    result.push({\n      mail: extractEmail(message.From),\n      message: extractMessage(message.snippet)\n    });\n  });\n}\n\nreturn result;"
+      },
+      "id": "fd6f5df9-161f-4e5d-b94d-1a4b91eeb3c0",
+      "name": "Process Thread History",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this customer support request and provide:\n1. Issue Category (technical, billing, general, complaint)\n2. Priority Level (high, medium, low)\n3. Professional response\n4. Human Escalation Need\n\n**Customer Information:**\n- Ticket ID: {{ $('Filter New Customer Emails').item.json.TicketID}}\n- Name: {{ $('Filter New Customer Emails').item.json.customerName}}\n- Email: {{ $('Filter New Customer Emails').item.json.From}}\n- Subject: {{ $('Filter New Customer Emails').item.json.subject}}\n- Current Message: {{ $('Filter New Customer Emails').item.json.emailBody}}\n\nThe responder's name is Mack David. ",
+        "options": {
+          "systemMessage": "=You are an advanced customer support AI agent with access to:\n- Vector knowledge base (`Qdrant Vector Store` tool customer_support_knowledgebase)\n- Full conversation history for reply threads\n\nTOOL USE:\n- Always call the tool customer_support_knowledgebase before answering any user query when additional context from the knowledge base could help provide a more accurate or complete answer.\n- Pass the most relevant query or keywords extracted from the user's latest message (and earlier messages if it's a REPLY thread).\n- Only skip the tool call if the user's question is clearly unrelated to the knowledge base content (e.g., generic greeting).\n\nFor REPLY threads:\n- Consider the entire conversation context\n- Reference previous exchanges appropriately\n- Maintain conversation continuity\n- Address any unresolved issues from earlier messages\n- Earlier messages are: \n\n{{ $json.extracted_data?.toJsonString() ?? '[]' }}\n\nFor NEW conversations:\n- Treat as fresh inquiry\n- Set appropriate expectations\n\nCATEGORIZATION:\n- Technical: Product issues, bugs, integrations, API problems\n- Billing: Payment issues, subscription changes, invoicing, refunds\n- General: Basic inquiries, feature requests, how-to questions\n- Complaint: Service complaints, dissatisfaction, escalations\n\nPRIORITY LEVELS:\n- High: System down, security issues, billing disputes, angry customers, escalation requests\n- Medium: Feature not working, account access issues, moderate concerns\n- Low: General questions, feature requests, how-to inquiries\n\nESCALATE when:\n- Customer explicitly requests human agent\n- Complex technical issues requiring engineering\n- Billing disputes over $500\n- Complaint escalations\n- Security or privacy concerns\n- Unresolved issues after multiple exchanges\n\nRESPONSE FORMAT:\nReturn in JSON:\n{\n  \"category\": \"technical|billing|general|complaint\",\n  \"priority\": \"high|medium|low\",\n  \"reasoning\": \"why you classified this way\",\n  \"response\": \"polite and professional customer reply\",\n  \"escalate\": true/false\n}\n\nRemember:\n- Use `Qdrant Vector Store` tool when relevant to fetch additional details before finalizing the \"response\".\n- Incorporate the retrieved knowledge in your answer naturally.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        1856,
+        432
+      ],
+      "id": "0ba8fec0-4272-44c3-89b9-102f4fc8e1af",
+      "name": "AI Analysis Agent"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "parsed-response",
+              "name": "category",
+              "value": "={{ $json.output.parseJson().category }}",
+              "type": "string"
+            },
+            {
+              "id": "category",
+              "name": "priority",
+              "value": "={{ $json.output.parseJson().priority }}",
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "name": "reasoning",
+              "value": "={{ $json.output.parseJson().reasoning }}",
+              "type": "string"
+            },
+            {
+              "id": "escalate",
+              "name": "needsEscalation",
+              "value": "={{ $json.output.parseJson().escalate }}",
+              "type": "boolean"
+            },
+            {
+              "id": "response",
+              "name": "aiResponse",
+              "value": "={{ $json.output.parseJson().response }}",
+              "type": "string"
+            },
+            {
+              "id": "sla-hours",
+              "name": "slaHours",
+              "value": "={{ \n  $json.output.parseJson().priority === 'low' ? 72 : \n  $json.output.parseJson().priority === 'med' ? 48 : 24 \n}}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f7678e37-77a3-40f0-9565-fc7649044f20",
+      "name": "Process AI Analysis",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2320,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "escalation-check",
+              "leftValue": "={{ $json.needsEscalation }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            },
+            {
+              "id": "59b70e3a-7a74-4326-8f4e-8e224aa8e6ee",
+              "leftValue": "={{ $json.needsEscalation }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "66df6f16-00a9-4155-8331-1fd73706a613",
+      "name": "Needs Escalation?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2768,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Gmail Trigger1').item.json.id }}",
+        "emailType": "text",
+        "message": "={{ $json.aiResponse }}",
+        "options": {
+          "appendAttribution": false,
+          "replyToSenderOnly": true
+        }
+      },
+      "id": "7377de31-db42-4870-a1ab-fdc4c838644f",
+      "name": "Send Automated Reply",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2992,
+        240
+      ],
+      "webhookId": "78d0a93e-8e5c-45b7-bfb7-146d3fd35c65",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "10frFdyKGC8Ldj9SMr5TGMC9h0umoDU9qKQxhrhldiV4",
+          "mode": "list",
+          "cachedResultName": "Customer chat bot",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10frFdyKGC8Ldj9SMr5TGMC9h0umoDU9qKQxhrhldiV4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sX_g0m3jRRgq7AaoHLUPeBG8-AqLzuY6x50_ttrGvUs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer Name": "={{ $('Filter New Customer Emails').item.json.customerName }}",
+            "Customer Email": "={{ $('Filter New Customer Emails').item.json.From }}",
+            "Subject": "={{ $('Filter New Customer Emails').item.json.subject }}",
+            "Original Message": "={{ $('Filter New Customer Emails').item.json.emailBody }}",
+            "Thread ID": "={{ $('Filter New Customer Emails').item.json.TicketID }}",
+            "Timestamp": "={{$now }}",
+            "AI Response": "={{ $('Process AI Analysis').item.json.aiResponse }}",
+            "Needs Human Review": "={{ $('Process AI Analysis').item.json.needsEscalation }}",
+            "SLA": "={{ $('Process AI Analysis').item.json.slaHours }}",
+            "Status Message ID": "={{ ($('Needs Escalation?').item.json.needsEscalation ? 'Needs Review' : 'Resolved').replace(/\\n/g, '').trim()}}\n"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Thread ID",
+              "displayName": "Thread ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Email",
+              "displayName": "Customer Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Original Message",
+              "displayName": "Original Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Response",
+              "displayName": "AI Response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Needs Human Review",
+              "displayName": "Needs Human Review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status Message ID",
+              "displayName": "Status Message ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SLA",
+              "displayName": "SLA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "82677dc2-50cb-4822-8b7c-20a628da6b78",
+      "name": "Log Ticket to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        3216,
+        432
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9nmUQyXVqzobJaV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "5452856965‬",
+        "text": "={{ ($json.priority === 'high' ? '🔴' : $json.priority === 'medium' ? '🟡' : '🟢') }} Support Ticket *{{ ($json['Status Message ID'] || 'Resolved').replace(/([_*[\\]])/g, '\\\\$1') }}*\n\n*Ticket:* {{ ($json['Thread ID'] || '').replace(/([_*[\\]])/g, '\\\\$1') }}\n*Customer:* {{ ($json['Customer Name'] || '').replace(/([_*[\\]])/g, '\\\\$1') }}\n*Category:* {{ ($('Process AI Analysis').item.json.category || '').replace(/([_*[\\]])/g, '\\\\$1') }}\n*Priority:* {{ ($('Process AI Analysis').item.json.priority || '').replace(/([_*[\\]])/g, '\\\\$1') }}\n*Status:* {{ ($json.needsEscalation ? 'Needs Human Review' : 'Auto-Resolved').replace(/([_*[\\]])/g, '\\\\$1') }}\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "disable_web_page_preview": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "6d519796-b9ca-45da-99bb-52f5e9ed74c9",
+      "name": "Send Status Update",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3440,
+        432
+      ],
+      "webhookId": "3f94bf0e-1c63-43c5-8f10-39f944fe9fe1",
+      "executeOnce": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "5ZzqnAxXt3gOsGUK",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "readStatus": "unread"
+        }
+      },
+      "id": "040d31ca-4eab-40b4-a64a-f73a3e9c96f8",
+      "name": "Gmail Trigger1",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        256,
+        432
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "customer_support_knowledgebase",
+        "toolDescription": "Fetch relevant data based on the query",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "batch_4_data_gemini-005",
+          "mode": "list",
+          "cachedResultName": "batch_4_data_gemini-005"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.1,
+      "position": [
+        1920,
+        672
+      ],
+      "id": "f4e0fdb7-5125-4cf6-97b0-9eac81daaef4",
+      "name": "Qdrant Vector Store",
+      "credentials": {
+        "qdrantApi": {
+          "id": "3rVkETsCmFoV79vx",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "e3c4d5e6-f7a8-b9c0-d1e2-f3a4b5c6d7e8",
+              "leftValue": "={{ $json.from }}",
+              "rightValue": "support@yourcompany.com",
+              "operator": {
+                "type": "string",
+                "operation": "notEqual"
+              }
+            },
+            {
+              "id": "a4f4012b-2958-4dae-a64e-3960e88f4aa9",
+              "leftValue": "={{ $json.subject }}",
+              "rightValue": "Re:",
+              "operator": {
+                "type": "string",
+                "operation": "notStartsWith"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "ignoreCase": true,
+          "looseTypeValidation": true
+        }
+      },
+      "id": "c7f0a168-595d-4e1f-9a7b-49b1a2296985",
+      "name": "Filter New Customer Emails",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        704,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "19aea966-3172-4c1c-add8-d85d9b0b33b7",
+              "name": "TicketID",
+              "value": "=Ticket_{{ $json.threadId }}",
+              "type": "string"
+            },
+            {
+              "id": "b2c3d4e5-f6a7-b8c9-d0e1-f2a3b4c5d6e7",
+              "name": "customerName",
+              "value": "={{ $json.From.split(\" <\")[0]}}",
+              "type": "string"
+            },
+            {
+              "id": "c3d4e5f6-a7b8-c9d0-e1f2-a3b4c5d6e7f8",
+              "name": "subject",
+              "value": "={{ $json.Subject }}",
+              "type": "string"
+            },
+            {
+              "id": "294ee585-4902-49ca-9cf8-0eb7aac5a1d6",
+              "name": "From",
+              "value": "={{ $json.From.extractEmail() }}",
+              "type": "string"
+            },
+            {
+              "id": "d4e5f6a7-b8c9-d0e1-f2a3-b4c5d6e7f8a9",
+              "name": "emailBody",
+              "value": "={{ $json.snippet }}",
+              "type": "string"
+            },
+            {
+              "id": "e5f6a7b8-c9d0-e1f2-a3b4-c5d6e7f8a9b0",
+              "name": "messageId",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "f6a7b8c9-d0e1-f2a3-b4c5-d6e7f8a9b0c1",
+              "name": "timestamp",
+              "value": "={{ $now }}",
+              "type": "string"
+            },
+            {
+              "id": "g7h8i9j0-k1l2-m3n4-o5p6-q7r8s9t0u1v2",
+              "name": "threadId",
+              "value": "={{ $json.threadId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8c1fdcf8-205f-42eb-ba4c-a0644202ad46",
+      "name": "Extract Email Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "addLabels",
+        "threadId": "={{ $('Gmail Trigger1').item.json.threadId }}",
+        "labelIds": [
+          "Label_6660854958303049710"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2992,
+        624
+      ],
+      "id": "e382a0b2-fe2a-459a-b390-8c638d35e3ee",
+      "name": "Needs Human Review Label",
+      "webhookId": "2956c6f2-3947-412b-b032-32aee19a8c6f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "addLabels",
+        "threadId": "={{ $('Gmail Trigger1').item.json.threadId }}",
+        "labelIds": [
+          "Label_5488661365548010496"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2992,
+        432
+      ],
+      "id": "095a235b-6f9f-4adb-884d-230d35830385",
+      "name": "Auto Resolved Label",
+      "webhookId": "7a6ac253-af4c-4bf2-a09d-203fd1055b34",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "extracted_data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        368
+      ],
+      "id": "422d8fc8-8c04-4f5d-b064-35cb10a4915a",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "60e99dbe-7235-4ad9-970d-fb100afb1c72",
+              "name": "due_date",
+              "value": "={{ $now.plus($json.slaHours,'hour')}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2544,
+        432
+      ],
+      "id": "308aab1a-dd87-4ad8-a9ed-26554a9f9a9e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1600,
+        432
+      ],
+      "id": "78b2b7b6-3c60-4211-9b0c-d02bf046ee7c",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "content": "## Process Flow \n1. Gets new mails real-time \n2. Check whether the mail is new or a reply mail \n     2.1. For new mail -  directly push the query to the agent\n     2.2. For Reply mail - get the previous mails and send them to the agent as context\n3. Get response from the agent \n4. Check whether human escalation needed or not \n5. Use label to organize the mails properly \n6. Create log in google sheets\n7. Notify Admin through telegram\n\n\nServices Used:\n1. Gmail\n2. OpenAI\n3. Qdrant \n4. Google Sheets\n5. Telegram ",
+        "height": 432,
+        "width": 624
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        176,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "5061b121-25d1-4dd5-9101-acb7bece6576",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        864
+      ],
+      "id": "6b87bef6-8fa8-48fe-818b-49016aa84e6f",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "shaa9VyNgLZESC5O",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-safeguard-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1728,
+        640
+      ],
+      "id": "20fd8222-4e80-42be-8e43-068ff1f9b99f",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "l6ujwrL1qc3yopni",
+          "name": "Groq account 4"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get Thread History": {
+      "main": [
+        [
+          {
+            "node": "Process Thread History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Thread History": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Process AI Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process AI Analysis": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Escalation?": {
+      "main": [
+        [
+          {
+            "node": "Needs Human Review Label",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Automated Reply",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Auto Resolved Label",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Automated Reply": {
+      "main": [
+        [
+          {
+            "node": "Log Ticket to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Ticket to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Send Status Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Extract Email Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Analysis Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter New Customer Emails": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Thread History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Email Data": {
+      "main": [
+        [
+          {
+            "node": "Filter New Customer Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Human Review Label": {
+      "main": [
+        [
+          {
+            "node": "Log Ticket to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto Resolved Label": {
+      "main": [
+        [
+          {
+            "node": "Log Ticket to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Needs Escalation?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI Analysis Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "762caf03-8205-419c-9bcc-cf3e8c4cfa9b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ab28bd0f45f75f9f6c0dc92d7cbbb170c6ea30db8577ebc0881fa6208e4abb76"
+  },
+  "id": "rO_HkGS9x_txebLvCKzLv",
+  "tags": [
+    {
+      "updatedAt": "2026-01-15T03:51:17.745Z",
+      "createdAt": "2026-01-15T03:51:17.745Z",
+      "id": "86aOhECcNtvNFbIx",
+      "name": "batch 2"
+    }
+  ]
+}
