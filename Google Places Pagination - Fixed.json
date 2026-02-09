@@ -1,0 +1,920 @@
+{
+  "name": "Google Places Pagination - Fixed",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Google Maps Data Scrap and Email\n\n### Flow \n\n1. Google Maps API (R&D)\n2. Data Extraction and Processing \n3. Website (Lead Qualification, PainPoint Identification), LinkedIn (Optional) & Email. \n4. Storing\n ",
+        "height": 288,
+        "width": 448
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "840d66df-d66e-4b98-ac20-b17fc5560af4",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "url": "https://maps.googleapis.com/maps/api/place/textsearch/json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.SearchQuery }}"
+            },
+            {
+              "name": "location",
+              "value": "={{ $json.Location }}"
+            },
+            {
+              "name": "radius",
+              "value": "={{ $json.Radius }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "df74deca-1521-48d5-a399-01a6b3f0000f",
+      "name": "Initial Search1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        256,
+        480
+      ],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "tEHbS16j7DVdjuVd",
+          "name": "Query Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "results",
+              "value": "={{ $json.results }}",
+              "type": "array"
+            },
+            {
+              "id": "2",
+              "name": "next_page_token",
+              "value": "={{ $json.next_page_token }}",
+              "type": "string"
+            },
+            {
+              "id": "796362c1-1b7c-43b2-bfdd-f9dbde657fde",
+              "name": "data_count",
+              "value": "={{ $json.results.length }}",
+              "type": "number"
+            },
+            {
+              "id": "90753fbc-a5dc-451d-bdce-dae4ba0caf28",
+              "name": "max_count",
+              "value": "={{ $('On form submission2').item.json['Count '] }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "85cd1c71-4b7f-4ee4-abba-6aa620eae815",
+      "name": "Extract Data1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        480,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition1",
+              "leftValue": "={{ $json.next_page_token }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "26cd4fc8-e741-415b-aee3-0900e3cd37b9",
+              "leftValue": "={{ $json.data_count }}",
+              "rightValue": "={{ $json.max_count }}",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "567bf4fb-f7bb-4f56-8063-cd217d62869d",
+      "name": "Has Next Page?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        768,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "id": "d2b812e9-0864-4f99-a8c2-214d78a3fb43",
+      "name": "Wait 2 Seconds1",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1040,
+        320
+      ],
+      "webhookId": "wait-webhook"
+    },
+    {
+      "parameters": {
+        "url": "https://maps.googleapis.com/maps/api/place/textsearch/json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "pagetoken",
+              "value": "={{ $json.next_page_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "88ae1bda-50f0-4852-a395-41a17e314685",
+      "name": "Get Next Page1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        384
+      ],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "tEHbS16j7DVdjuVd",
+          "name": "Query Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "results",
+              "value": "={{ $('Has Next Page?1').item.json.results.concat($json.results) }}",
+              "type": "array"
+            },
+            {
+              "id": "2",
+              "name": "next_page_token",
+              "value": "={{ $json.next_page_token }}",
+              "type": "string"
+            },
+            {
+              "id": "4cb2acd3-4dbf-4b1d-985e-558ab69af188",
+              "name": "data_count",
+              "value": "={{ $('Has Next Page?1').item.json.data_count + $json.results.length }}",
+              "type": "number"
+            },
+            {
+              "id": "max_count_carry",
+              "name": "max_count",
+              "value": "={{ $('Has Next Page?1').item.json.max_count }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7d7c7d14-2107-4deb-bcdb-5cb23ade0b1b",
+      "name": "Extract Next Data1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        1472,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        704
+      ],
+      "id": "c1b91e26-7284-48c2-8e5c-8cd45951e8e2",
+      "name": "Split Out3"
+    },
+    {
+      "parameters": {
+        "formTitle": "Lead Generation",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "SearchQuery",
+              "placeholder": "UK Restaurant",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Location",
+              "placeholder": "1233, 1323"
+            },
+            {
+              "fieldLabel": "Radius",
+              "placeholder": "1000"
+            },
+            {
+              "fieldLabel": "Count ",
+              "placeholder": "50"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -32,
+        432
+      ],
+      "id": "372e1146-260f-4534-bc1a-a6da177072cd",
+      "name": "On form submission2",
+      "webhookId": "e491bfb6-60fa-4bf1-8008-0b6439a6d098"
+    },
+    {
+      "parameters": {
+        "url": "=https://places.googleapis.com/v1/places/{{ $json.place_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Goog-FieldMask",
+              "value": "id,displayName,formattedAddress,nationalPhoneNumber,internationalPhoneNumber,websiteUri,regularOpeningHours,rating,userRatingCount,photos,location,types,businessStatus"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1392,
+        704
+      ],
+      "id": "6337511e-09c3-40c7-8c26-4e3786e9b9e2",
+      "name": "HTTP Request5",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "gg5jGnTVEqVfSs77",
+          "name": "Fal AI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "958e05f4-52bc-4aa7-ab38-a13f239731f6",
+              "name": "business_types",
+              "value": "={{ $json.types }}",
+              "type": "array"
+            },
+            {
+              "id": "3bcf915c-f8fd-4e0f-ab81-9290e0a6fe92",
+              "name": "nationalPhoneNumber",
+              "value": "={{ $json.nationalPhoneNumber }}",
+              "type": "string"
+            },
+            {
+              "id": "1a9b492a-c7c8-45bc-8158-3638bfbb0128",
+              "name": "internationalPhoneNumber",
+              "value": "={{ $json.internationalPhoneNumber }}",
+              "type": "string"
+            },
+            {
+              "id": "9e7c33f9-e762-4564-8bf4-6d5f71205da4",
+              "name": "Address",
+              "value": "={{ $json.formattedAddress }}",
+              "type": "string"
+            },
+            {
+              "id": "b258e1f1-5da1-4d8f-9df3-7b11b37a7718",
+              "name": "rating",
+              "value": "={{ $json.rating }}",
+              "type": "number"
+            },
+            {
+              "id": "7ed98572-8d32-4e77-8e6e-889e7150dcd3",
+              "name": "websiteUri",
+              "value": "={{ $json.websiteUri }}",
+              "type": "string"
+            },
+            {
+              "id": "711436e8-f05d-45bf-b0ce-e05bc5e2d6b8",
+              "name": "businessStatus",
+              "value": "={{ $json.businessStatus }}",
+              "type": "string"
+            },
+            {
+              "id": "a05df08f-be2d-4bd5-bc81-36df29819cba",
+              "name": "displayName",
+              "value": "={{ $json.displayName.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1584,
+        704
+      ],
+      "id": "b2090328-78dd-45f9-8d5d-162830ddc6c7",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b0771745-280a-4fde-9db7-c9e93581e1b3",
+              "leftValue": "={{ $json.nationalPhoneNumber }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "0418fa98-87e9-4a39-93a1-07493f3e4bdc",
+              "leftValue": "={{ $json.websiteUri }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1776,
+        704
+      ],
+      "id": "204d4c3b-6c68-4f35-af80-9d3a8169a146",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.websiteUri.replace(/\\/+$/, '')}}/contact",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1952,
+        704
+      ],
+      "id": "931bf325-46ec-48be-be5d-b9dda7e86898",
+      "name": "HTTP Request6",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "560c18ba-bb5e-41bc-8843-fc61903440b2",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        2144,
+        704
+      ],
+      "id": "678be164-b565-4150-9cfe-8b2fd11cd8a7",
+      "name": "Filter2"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "Email",
+              "cssSelector": "a[href^=\"mailto:\"]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        2352,
+        704
+      ],
+      "id": "1971fe88-3641-4415-9fbc-5ac1963daa31",
+      "name": "HTML1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6f54afaf-523d-410b-bdbe-b2a45c03944c",
+              "leftValue": "={{ $json.Email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        2560,
+        704
+      ],
+      "id": "6f1a2c6a-2452-4e7d-a324-960b50ed83e1",
+      "name": "Filter3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0919411f-b758-42cc-a654-3ac32762025e",
+              "name": "business_types",
+              "value": "={{ $('Edit Fields1').item.json.business_types }}",
+              "type": "array"
+            },
+            {
+              "id": "0d9d9f34-abea-432b-ae58-c532930deef7",
+              "name": "nationalPhoneNumber",
+              "value": "={{ $('Edit Fields1').item.json.nationalPhoneNumber }}",
+              "type": "string"
+            },
+            {
+              "id": "69180af7-36c8-487f-be62-7929b65c03b2",
+              "name": "internationalPhoneNumber",
+              "value": "={{ $('Edit Fields1').item.json.internationalPhoneNumber }}",
+              "type": "string"
+            },
+            {
+              "id": "5ea28314-b715-47de-9876-f9562516acd0",
+              "name": "Address",
+              "value": "={{ $('Edit Fields1').item.json.Address }}",
+              "type": "string"
+            },
+            {
+              "id": "2c6af536-587f-46e2-8f21-3ae0ada6248a",
+              "name": "rating",
+              "value": "={{ $('Edit Fields1').item.json.rating }}",
+              "type": "number"
+            },
+            {
+              "id": "86f87e11-d1b9-4307-8750-d7e6d356348c",
+              "name": "websiteUri",
+              "value": "={{ $('Edit Fields1').item.json.websiteUri }}",
+              "type": "string"
+            },
+            {
+              "id": "767da67f-80d1-4592-8b77-1812687f2f36",
+              "name": "businessStatus",
+              "value": "={{ $('Edit Fields1').item.json.businessStatus }}",
+              "type": "string"
+            },
+            {
+              "id": "e89c7367-d1de-41b3-9910-7091aa0ee38d",
+              "name": "Email",
+              "value": "={{ $json.Email.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/)?.[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2768,
+        704
+      ],
+      "id": "223fa69a-3404-4e1e-86c3-eae799e782c4",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1AtrNhRMI5WadlRwaTh6DfMPefjVknRpKNJCzdWsTcgs",
+          "mode": "list",
+          "cachedResultName": "Headshot knowledgebase",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AtrNhRMI5WadlRwaTh6DfMPefjVknRpKNJCzdWsTcgs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1448606819,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AtrNhRMI5WadlRwaTh6DfMPefjVknRpKNJCzdWsTcgs/edit#gid=1448606819"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Business Types": "={{ $json.business_types }}",
+            "National Phone No": "={{ $json.nationalPhoneNumber }}",
+            "Int. Phone No.": "={{ $json.internationalPhoneNumber }}",
+            "Address": "={{ $json.Address }}",
+            "Rating": "={{ $json.rating }}",
+            "Website URI": "={{ $json.websiteUri }}",
+            "BusinessStatus": "={{ $json.businessStatus }}",
+            "Email": "={{ $json.Email }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Business Types",
+              "displayName": "Business Types",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "National Phone No",
+              "displayName": "National Phone No",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Int. Phone No.",
+              "displayName": "Int. Phone No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Website URI",
+              "displayName": "Website URI",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "BusinessStatus",
+              "displayName": "BusinessStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2976,
+        704
+      ],
+      "id": "e3e23e82-94bb-45cf-8a0b-69e1938b5e1c",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9nmUQyXVqzobJaV",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Initial Search1": {
+      "main": [
+        [
+          {
+            "node": "Extract Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data1": {
+      "main": [
+        [
+          {
+            "node": "Has Next Page?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Next Page?1": {
+      "main": [
+        [
+          {
+            "node": "Wait 2 Seconds1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split Out3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2 Seconds1": {
+      "main": [
+        [
+          {
+            "node": "Get Next Page1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Next Page1": {
+      "main": [
+        [
+          {
+            "node": "Extract Next Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Next Data1": {
+      "main": [
+        [
+          {
+            "node": "Has Next Page?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission2": {
+      "main": [
+        [
+          {
+            "node": "Initial Search1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request6": {
+      "main": [
+        [
+          {
+            "node": "Filter2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter2": {
+      "main": [
+        [
+          {
+            "node": "HTML1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML1": {
+      "main": [
+        [
+          {
+            "node": "Filter3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "88ec6630-e380-4c7a-900b-26b7a87050ed",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ab28bd0f45f75f9f6c0dc92d7cbbb170c6ea30db8577ebc0881fa6208e4abb76"
+  },
+  "id": "TaVx8sFSxWEvDSUns2-QI",
+  "tags": []
+}

@@ -1,0 +1,469 @@
+{
+  "name": "AI Project Manager — Add Tasks to Google Sheets from Chat",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "responseNodes"
+        }
+      },
+      "id": "4db06b40-f1ea-4374-bb27-8f7411df73b0",
+      "name": "Chat Trigger",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        416,
+        -16
+      ],
+      "webhookId": "87dac172-bf37-4f9d-982a-d5ecddc07f38",
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Goal:\nYou are only helping the user create new tasks in a Google Sheet. Do not handle updates yet.\n\nProcess:\n\nStart by determining whether the user wants to create a new item or update an existing one.\n\nContinue chatting naturally with the user until:\n\nYou know that they want to update (in which case you’ll stop and output that), or\n\nYou’ve gathered all the necessary fields for a new task.\n\nRequired fields for creating a new task:\n\nTask\n\nDescription\n\nStatus\n\nThe user can respond with “don’t know,” in which case that field is left blank (output nothing for that field).\n\nOutput Format:\n\n{\n  \"response\": \"Your message back to the user\",\n  \"info gathered\": {\n    \"type\": \"create or update\",\n    \"Task\": \"\",\n    \"Description\": \"\",\n    \"Status\": \"\"\n  },\n  \"all Info\": \"Yes or No\"\n}\n\n\nRules:\n\n\"type\" can only be \"create\" or \"update\".\n\n\"all Info\" can only be \"Yes\" or \"No\", depending on whether you have all required fields for the chosen action.\n\nKeep chatting with the user until \"all Info\" = \"Yes\"."
+        }
+      },
+      "id": "43e00a11-6bd7-412e-951d-d565b1f16243",
+      "name": "Project Manager Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        752,
+        224
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {},
+      "id": "a70a71c2-7b36-4969-8053-939b42ed1c9c",
+      "name": "Chat Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        784,
+        480
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"response\": \"what you want to say back to the user\", \n  \"info gathered\": \"all of the info you have gathered so far\", \n  \"all Info\": \"Yes or no if you have all of the fields\"\n}",
+        "autoFix": true
+      },
+      "id": "1e0c4bf4-1e22-464b-bd15-0af3395c4535",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        960,
+        480
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"task\": \"task\",\n\t\"description\": \"description\",\n  \"status\": \"status\"\n}"
+      },
+      "id": "a247e89c-02dd-40af-a952-90ed7deffcc4",
+      "name": "Structured Output Parser1",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        1904,
+        144
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output['info gathered'] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "take in this info and parse it into this json. "
+        }
+      },
+      "id": "c4cbcdc4-6605-403b-a325-edd9f91f17a5",
+      "name": "Write Json",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1728,
+        -64
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "content": "### AI Project Manager — Add Tasks to Google Sheets from Chat\n\nLet your team create, track, and manage project tasks through natural conversation.  \nThis workflow uses an **AI Project Manager Agent** that chats with users, gathers the task details it needs, and automatically adds them to a **Google Sheet**.\n",
+        "height": 1136,
+        "width": 2448,
+        "color": 7
+      },
+      "id": "e52727d4-7089-4d9f-81f7-ccfe3268f4d9",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        256,
+        -224
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1AtrNhRMI5WadlRwaTh6DfMPefjVknRpKNJCzdWsTcgs",
+          "mode": "list",
+          "cachedResultName": "Headshot knowledgebase",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AtrNhRMI5WadlRwaTh6DfMPefjVknRpKNJCzdWsTcgs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1270432871,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AtrNhRMI5WadlRwaTh6DfMPefjVknRpKNJCzdWsTcgs/edit#gid=1270432871"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "task": "={{ $json.output.task }}",
+            "description": "={{ $json.output.description }}",
+            "status": "={{ $json.output.status }}"
+          },
+          "matchingColumns": [
+            "task"
+          ],
+          "schema": [
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "4e637959-1f16-4582-8c27-dcc266418db1",
+      "name": "Add Task",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        2176,
+        384
+      ],
+      "typeVersion": 4.7,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9nmUQyXVqzobJaV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "message": "=Item Added",
+        "waitUserReply": false,
+        "options": {}
+      },
+      "id": "ae82f029-7319-4ba0-970c-163560b0d5b6",
+      "name": "Respond Complete",
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "position": [
+        2464,
+        -64
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "852bfa85-8367-4822-ae6b-e8490c57f00e",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.output['all Info'] }}",
+              "rightValue": "Yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "bff54aff-e2ac-491e-b5db-ff7938ae5bd7",
+      "name": "Have All Info?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1104,
+        224
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "message": "={{ $json.output.response }}",
+        "waitUserReply": false,
+        "options": {}
+      },
+      "id": "cb14da85-70a2-40b4-bc0b-2186805169d6",
+      "name": "Get More Info",
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "position": [
+        1456,
+        352
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-safeguard-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        496,
+        656
+      ],
+      "id": "9931573e-f5c0-4838-a6ae-e49c74911d46",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "XJ2uaJlOrZvobroJ",
+          "name": "Groq account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-safeguard-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        976,
+        688
+      ],
+      "id": "07d866a1-26d7-4160-8db5-aae076434723",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "XJ2uaJlOrZvobroJ",
+          "name": "Groq account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-safeguard-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        192
+      ],
+      "id": "3388410c-2e83-4197-8f86-8a993279a9c6",
+      "name": "Groq Chat Model2",
+      "credentials": {
+        "groqApi": {
+          "id": "XJ2uaJlOrZvobroJ",
+          "name": "Groq account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## message type\ncreate\nplay game\nI have a football match at 5pm\nThe task has not started yet.\n\n",
+        "height": 144,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        864,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "ec9bd024-2c93-461d-89be-c519f4fdef9a",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Add Task": {
+      "main": [
+        [
+          {
+            "node": "Respond Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Json": {
+      "main": [
+        [
+          {
+            "node": "Add Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Project Manager Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "Project Manager Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Have All Info?": {
+      "main": [
+        [
+          {
+            "node": "Write Json",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get More Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Project Manager Agent": {
+      "main": [
+        [
+          {
+            "node": "Have All Info?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Project Manager Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Write Json",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Project Manager Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Write Json",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "843b0a2b-af0c-44b3-a3ee-2095469ea40d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ab28bd0f45f75f9f6c0dc92d7cbbb170c6ea30db8577ebc0881fa6208e4abb76"
+  },
+  "id": "TnJAhdzeKR_z9galE0mzK",
+  "tags": []
+}
