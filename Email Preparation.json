@@ -1,0 +1,1152 @@
+{
+  "name": "Email Preparation",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "14C520_WlhObFyBm21HqAzHhvSt2Z2dNbA6_lybTO2xc",
+          "mode": "list",
+          "cachedResultName": "Google Maps Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14C520_WlhObFyBm21HqAzHhvSt2Z2dNbA6_lybTO2xc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14C520_WlhObFyBm21HqAzHhvSt2Z2dNbA6_lybTO2xc/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -560,
+        -48
+      ],
+      "id": "ab153856-c788-4de0-85d6-63203bc8c98c",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qy1phcbDa9ZebHu1",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "maxItems": 3
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        -48
+      ],
+      "id": "afe6cd30-8e60-49de-a493-79891374b9fa",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c051de6b-cdd4-4c3e-9d24-cc612183b216",
+              "leftValue": "={{ $json['is email prepared'] }}",
+              "rightValue": "Yes",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "04128a14-09db-4bf7-9cba-377f47b8d3cd",
+              "leftValue": "={{ $json.BusinessStatus }}",
+              "rightValue": "OPERATIONAL",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -384,
+        -48
+      ],
+      "id": "0b99f9aa-9229-450c-ba4c-a6ca8ab9cff6",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        -64
+      ],
+      "id": "fdeefaf2-3dcb-4250-b12e-e17f6f7a6202",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "gEvGWgrCb9CT8bd2",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is the Business/Company Information\n\nBusiness name:  {{ $json.Name }}\nAddress: {{ $json.Address }}\nWebsite: {{ $json['Website URI'] }}\nRating: {{ $json.Rating }}\nBusiness Types: {{ $json['Business Types'] }}\n\n\nMake sure your research is 100% related to this. ",
+        "options": {
+          "systemMessage": "=ROLE:\nYou are a senior researcher in a Business Development team.\n\nTASK:\nPerform comprehensive, high-accuracy research on a given prospect company. Ensure all information strictly corresponds to the correct company.\n\nThere's no tool to call, use the given information to generate everything. \n\nRESEARCH REQUIREMENTS:\n1. Provide a detailed and well-structured research report (multiple paragraphs).\n2. Clearly explain what the company does, including:\n   - Core products or services\n   - Industry and business model\n   - Target customers or market segments\n3. Include company background such as:\n   - Founding details (if available)\n   - Company size or scale (if available)\n4. Highlight recent news, achievements, milestones, partnerships, awards, funding, or notable developments.\n5. Maintain a professional, factual, and business-ready tone suitable for sales or executive review.\n6. Do NOT include reasoning steps, internal thoughts, or meta phrases (e.g., “User asked me”, “I researched”).\n7. Do NOT speculate or assume facts.\n\nCOUNTRY RULE:\n- The country value must be a short country code only (e.g., US, UK, CA, AU, BD).\n\nOUTPUT RULES:\n- Output ONLY the final research.\n- No explanations, no analysis, no extra text.\n- The response must strictly follow this JSON structure:\n- Response should be detailed, more than 2000 words. \n\nOUTPUT FORMAT:\n{\n  \"response\": \"<Detailed professional research report of the company (not short)>\",\n  \"country\": \"<Country code>\"\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        16,
+        -208
+      ],
+      "id": "d740d4a3-15d5-4b41-a4fd-bcd8df7a60b9",
+      "name": "Research Agent"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "14C520_WlhObFyBm21HqAzHhvSt2Z2dNbA6_lybTO2xc",
+          "mode": "list",
+          "cachedResultName": "Google Maps Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14C520_WlhObFyBm21HqAzHhvSt2Z2dNbA6_lybTO2xc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14C520_WlhObFyBm21HqAzHhvSt2Z2dNbA6_lybTO2xc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Get row(s) in sheet').item.json.row_number }}",
+            "Sender Email": "={{ $json['Sender Email'] }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Business Types",
+              "displayName": "Business Types",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "National Phone No",
+              "displayName": "National Phone No",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Int. Phone No.",
+              "displayName": "Int. Phone No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Website URI",
+              "displayName": "Website URI",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "BusinessStatus",
+              "displayName": "BusinessStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sender Email",
+              "displayName": "Sender Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "is email prepared",
+              "displayName": "is email prepared",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Research Report",
+              "displayName": "Research Report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email1_Subject",
+              "displayName": "Email1_Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email1_Body",
+              "displayName": "Email1_Body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email2_Subject",
+              "displayName": "Email2_Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email2_Body",
+              "displayName": "Email2_Body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email3_Subject",
+              "displayName": "Email3_Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email3_Body",
+              "displayName": "Email3_Body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email1_Sent",
+              "displayName": "Email1_Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email2_Sent",
+              "displayName": "Email2_Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email3_Sent",
+              "displayName": "Email3_Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MessageID",
+              "displayName": "MessageID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Replied",
+              "displayName": "Replied",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TimeZone",
+              "displayName": "TimeZone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        784,
+        -208
+      ],
+      "id": "a20cceeb-02e0-4aeb-917c-7ebe1e460a58",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qy1phcbDa9ZebHu1",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "168a85d5-8ce3-46cc-9adc-c8ec7301ad8d",
+              "name": "response",
+              "value": "={{ $json.output.parseJson().response }}",
+              "type": "string"
+            },
+            {
+              "id": "930e6823-83bd-4ab9-b0d1-8d5ea021f401",
+              "name": "country",
+              "value": "={{ $json.output.parseJson().country }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        368,
+        -208
+      ],
+      "id": "554e1734-71fa-4e71-8557-394fb92a4f5c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        896,
+        -48
+      ],
+      "id": "4491c654-eec9-4386-80be-582cc10cf4d8",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "gEvGWgrCb9CT8bd2",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        -48
+      ],
+      "id": "d6fe96c9-41b7-456b-b6ab-ffe3e47a8e17",
+      "name": "Groq Chat Model2",
+      "credentials": {
+        "groqApi": {
+          "id": "gEvGWgrCb9CT8bd2",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "970d6c3c-9571-45d5-9dfa-f9e1cf00cfea",
+              "name": "Email1_subject",
+              "value": "={{ $json.output.parseJson().email1.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "e0de8a85-4edd-436c-9a3c-fdc8d56a564c",
+              "name": "Email1_Body",
+              "value": "={{ $json.output.parseJson().email1.body }}",
+              "type": "string"
+            },
+            {
+              "id": "1ef89342-1be2-4072-b06e-21c85fda7eb5",
+              "name": "Email2_subject",
+              "value": "={{ $json.output.parseJson().email2.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "612571f6-a305-436f-80c9-db27833c41c4",
+              "name": "Email2_Body",
+              "value": "={{ $json.output.parseJson().email2.body }}",
+              "type": "string"
+            },
+            {
+              "id": "9615a703-2cff-44c7-95c1-ae90cc4af706",
+              "name": "=Email3_subject",
+              "value": "={{ $json.output.parseJson().email3.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "0a484853-d35e-4791-ab50-3138e1f5fbdd",
+              "name": "Email3_body",
+              "value": "={{ $json.output.parseJson().email3.body }}",
+              "type": "string"
+            },
+            {
+              "id": "13a62b4e-8eb0-4253-8f10-e250a16098b0",
+              "name": "Research Report",
+              "value": "={{ $('Fix Sender Email').item.json.response }}",
+              "type": "string"
+            },
+            {
+              "id": "42abca4d-83a7-428d-84b3-89d846f7f9d8",
+              "name": "country",
+              "value": "={{ $('Fix Sender Email').item.json.country }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1680,
+        -208
+      ],
+      "id": "040f6035-899d-47bb-9751-c586106a2fb3",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over each item passed from the Merge node\nfor (const item of items) {\n\t// Get the country value (make sure to match the field name exactly)\n\tconst countryRaw = item.json[\"country\"];\n\tlet country = \"\";\n\tif (countryRaw) {\n\t\tcountry = countryRaw.toLowerCase().trim();\n\t}\n\n\t// Define arrays for the different time zone groups\n\tconst t1Countries = [\"US\", \"united states\", \"canada\"];\n\tconst europeanCountries = [\n\t\t\"albania\", \"andorra\", \"armenia\", \"austria\", \"azerbaijan\", \"belarus\", \"belgium\",\n\t\t\"bosnia and herzegovina\", \"bulgaria\", \"croatia\", \"cyprus\", \"czech republic\", \"czechia\",\n\t\t\"denmark\", \"estonia\", \"finland\", \"france\", \"georgia\", \"germany\", \"greece\", \"hungary\",\n\t\t\"iceland\", \"ireland\", \"italy\", \"kosovo\", \"latvia\", \"liechtenstein\", \"lithuania\",\n\t\t\"luxembourg\", \"malta\", \"moldova\", \"monaco\", \"montenegro\", \"netherlands\", \"north macedonia\",\n\t\t\"norway\", \"poland\", \"portugal\", \"romania\", \"russia\", \"san marino\", \"serbia\", \"slovakia\",\n\t\t\"slovenia\", \"spain\", \"sweden\", \"switzerland\", \"turkey\", \"ukraine\", \"united kingdom\",\n\t\t\"vatican city\"\n\t];\n\tconst t3Countries = [\"australia\", \"new zealand\"];\n\n\t// Determine and populate the Time Zone based on the country value\n\tif (t1Countries.includes(country)) {\n\t\titem.json[\"Time Zone\"] = \"T1\";\n\t} else if (europeanCountries.includes(country)) {\n\t\titem.json[\"Time Zone\"] = \"T2\";\n\t} else if (t3Countries.includes(country)) {\n\t\titem.json[\"Time Zone\"] = \"T3\";\n\t} else {\n\t\t// For any other country not defined above, assign T4.\n\t\t// If you want to limit to T1, T2, or T3 only, you can decide to leave it blank or assign a default value.\n\t\titem.json[\"Time Zone\"] = \"T4\";\n\t}\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        -208
+      ],
+      "id": "39cececb-50c3-48bc-bf99-cc7399a322d0",
+      "name": "Timezone"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "14C520_WlhObFyBm21HqAzHhvSt2Z2dNbA6_lybTO2xc",
+          "mode": "list",
+          "cachedResultName": "Google Maps Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14C520_WlhObFyBm21HqAzHhvSt2Z2dNbA6_lybTO2xc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14C520_WlhObFyBm21HqAzHhvSt2Z2dNbA6_lybTO2xc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Get row(s) in sheet').item.json.row_number }}",
+            "is email prepared": "Yes",
+            "Research Report": "={{ $json['Research Report'] }}",
+            "Email1_Subject": "={{ $json.Email1_subject }}",
+            "Email1_Body": "={{ $json.Email1_Body }}",
+            "Email2_Subject": "={{ $json.Email2_subject }}",
+            "Email2_Body": "={{ $json.Email2_Body }}",
+            "Email3_Subject": "={{ $json.Email3_subject }}",
+            "Email3_Body": "={{ $json.Email3_body }}",
+            "TimeZone": "={{ $json['Time Zone'] }}",
+            "Email1_Sent": "No",
+            "Email2_Sent": "No",
+            "Email3_Sent": "No",
+            "Replied": "No"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Business Types",
+              "displayName": "Business Types",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "National Phone No",
+              "displayName": "National Phone No",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Int. Phone No.",
+              "displayName": "Int. Phone No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Website URI",
+              "displayName": "Website URI",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "BusinessStatus",
+              "displayName": "BusinessStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sender Email",
+              "displayName": "Sender Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "is email prepared",
+              "displayName": "is email prepared",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Research Report",
+              "displayName": "Research Report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email1_Subject",
+              "displayName": "Email1_Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email1_Body",
+              "displayName": "Email1_Body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email2_Subject",
+              "displayName": "Email2_Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email2_Body",
+              "displayName": "Email2_Body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email3_Subject",
+              "displayName": "Email3_Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email3_Body",
+              "displayName": "Email3_Body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email1_Sent",
+              "displayName": "Email1_Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email2_Sent",
+              "displayName": "Email2_Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email3_Sent",
+              "displayName": "Email3_Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MessageID",
+              "displayName": "MessageID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Replied",
+              "displayName": "Replied",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TimeZone",
+              "displayName": "TimeZone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2064,
+        -208
+      ],
+      "id": "7f597754-45fd-411b-b5bc-24a31abd02a6",
+      "name": "Update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qy1phcbDa9ZebHu1",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Array of sender emails to rotate through\nconst senderEmails = [\n  \"khair@xinotrix.com\",\n  \"jaber@xinotrix.com\",\n  \"rahat@xinotrix.com\",\n];\n\n// Get all input items from the Time Zone node\nconst items = $input.all();\n\n// Process each item\nfor (let i = 0; i < items.length; i++) {\n  // Calculate which email to use based on position (cycling through the array)\n  const emailIndex = i % senderEmails.length;\n  \n  // Assign the sender email to the current item\n  items[i].json[\"Sender Email\"] = senderEmails[emailIndex];\n}\n\n// Return the updated items\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        -208
+      ],
+      "id": "0ba2428f-87b2-4f67-8276-94ae3d54b496",
+      "name": "Fix Sender Email"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Task: New Prospect\nCreate emails using the following details:\nResearch:\n\nCompany name: {{ $('Get row(s) in sheet').item.json.Name }}\nCompany Website: {{ $('Get row(s) in sheet').item.json['Website URI'] }}\nRating: {{ $('Get row(s) in sheet').item.json.Rating }}\n\nAnalysis:\n{{ $json.output }}",
+        "options": {
+          "systemMessage": "=You are part of the cold email team for Xinotrix, a Custom Software and AI Automation Agency that helps businesses streamline operations through custom software (Website, Mobile App), AI, and business automation. \n\n## Xinotrix Services\n\n- AI Integrated Software – AI enabled custom software\n- AI Agents & Automation – Chatbots, workflows, voice & GenAI solutions\n- ML & Vision AI – Predictive analytics, recommendations\n- Custom Software – Tailored CRM, ERP, and management systems\n- Web & Mobile Apps – Scalable, high-performance applications\n- E-Commerce – Custom stores, multi-vendor platforms, secure payments\n\nYour job is to create 3 emails given the following info about a new cold lead:\n\n1. Research: Findings about the prospect by researching them on social media and the web\n2. Analysis: Insights extracted from analyzing the research\n3. Tactic: Strategy to create the cold emails\n\nCreate a cold email sequence of 3 emails sent 2 days apart. Each email should follow the tactic below while incorporating research and analysis insights.\n\n## Email Sequence Strategy\n### Email #1 - Initial Outreach\n#### Subject Line Guidelines:\n  * 3-7 words maximum for optimal deliverability\n(Include prospect's name OR company name when it sounds natural)\n  * Avoid spam triggers: \"free,\" \"guarantee,\" \"no obligation,\" \"price,\" \"100%,\" \"sale,\" excessive punctuation\n  * Create curiosity without sounding sales\n(Focus on intrigue or benefit)\n\n#### Body Structure:\n  a) Hook (2-3 sentences): Personalized opening that captures attention using research insights. Always mention source (\"saw on LinkedIn,\" \"noticed online,\" etc.)\n  b) Challenge/Opportunity (2-3 sentences): Present either:\n    * A specific pain point identified from research\n    * An industry-wide challenge affecting similar companies\n    * A growth opportunity they might be missing\nDon't sound condescending; be genuinely helpful\n\n  c) Value Bridge (1 sentence): Briefly hint at how automation/AI could address this without being salesy\n  d) CTA: Offer to share insights on a 15-minute call this {{ ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][(new Date().getDay() + 2) % 7] }}. Include clear next step: \"Should I book you in?\" or \"Worth a quick chat?\" \n  e) \"Or you can book my calender directly:\"\n\n\n#### Guidelines:\n  * Maximum 100 words\n  * Short paragraphs (1-2 sentences each) for white space\nConversational, \"you-focused\" tone\n  * 6th-grade reading level\n  * Start with \"Hey\"\n  * No formal openers like \"Hope you're doing well\"\nNo images, attachments, bullet points, or excessive punctuation\n * End with the calender event: https://calendly.com/khairahmad6/business-discussion\n\n### Email #2 – Follow-up with Added Value (Standalone)\n\n#### Objective:\nSend a follow-up email in the sequence that adds new value and implies prior outreach,\nbut MUST be standalone (not a reply and no \"Re:\" tone).\n\n#### Subject Line Guidelines:\n- 3–7 words maximum\n- Insight- or curiosity-driven\n- Neutral follow-up framing (no “Re:”, no “Following up”)\n- Avoid spam trigger words\n\n#### Body Structure:\n\nOpening (1–2 sentences):\n- Start with: \"Hey,\"\n- Acknowledge prior outreach indirectly (e.g., “One more quick thought I wanted to share…”)\n- Personalize using research and clearly mention the source (LinkedIn, website, article, etc.)\n- Do NOT say “my last email” or “following up on…”\n\nNew Challenge / Opportunity (2–3 sentences):\n- Introduce a DIFFERENT angle than Email #1:\n  * Secondary pain point\n  * Downstream impact\n  * Common inefficiency seen in similar companies\n- Keep tone helpful and observational, not salesy or corrective\n\nValue Bridge (1 sentence):\n- Briefly hint how AI or automation is being used to address this issue\n- No pitching or feature listing\n\nCTA (1 sentence):\n- Invite a low-commitment conversation\n- Example tone: “Worth a quick 15-minute exchange this\n  {{ ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][(new Date().getDay() + 2) % 7] }}?”\n\n#### Style Guidelines:\n- Maximum 100 words\n- Short paragraphs (1–2 sentences each)\n- Conversational, “you-focused”\n- 6th-grade reading level\n- No images, attachments, bullet points, or excessive punctuation\n- Standalone email (must make sense even if Email #1 was missed)\n\n### Email #3 - Final Touch\n#### Structure:\n\n  * Start with \"I was thinking about [Company Name] again and...\" or similar\n  * Present a DIFFERENT challenge/opportunity from Email #1\n  * Position as final attempt: \"Last note from me\" or \"Final thought\"\n\n#### Guidelines:\n\n  * Same format rules as Email #1\nNo repetition of previous pain points\nAssume familiarity from previous emails\nInclude easy booking option\n\n#### Research Integration Guidelines\nWhen incorporating research:\n  * Always cite source: \"saw on LinkedIn,\" \"noticed online,\" \"read in [publication]\"\n  * Use specific details: company expansions, recent hires, industry awards, new locations\n  * Connect insights to business impact naturally\nAvoid information that's too personal or intrusive\n\n#### Fallback Strategies (when research is limited):\n\n  * Industry-wide challenges (digital transformation, efficiency needs, competitive pressure)\n  * Common pain points for their company size/type\n  * Growth opportunities in their sector\n\n#### Compliance & Professionalism\n\n  * Maintain professional but conversational tone\n  * Ensure claims are believable and evidence-based\n  * Avoid overly aggressive sales language\n  * Keep focus on helping rather than selling\n  * Consider including subtle compliance language if needed for your region\n\n\n## Output Format\n\njson{\n  \"email1\": {\n    \"subject\": \"TEXT-HERE\",\n    \"body\": \"HTML-HERE\"\n  },\n  \"email2\": {\n    \"subject\": \"TEXT-HERE\",\n    \"body\": \"HTML-HERE\"\n  },\n  \"email3\": {\n    \"subject\": \"TEXT-HERE\", \n    \"body\": \"HTML-HERE\"\n  }\n}\nTechnical Notes:\n\nUse only <br> tags for line breaks\nNo other HTML formatting\nDon't wrap output in json\nOutput only the JSON, nothing else\n\n## Value Proposition Reminder\n\nXinotrix delivers:\n - AI-enabled custom software \n - AI agents & process automation saving 10–40 hours/week\n - Web & mobile app development focused on performance and growth\n - ML & AI solutions reducing operational costs by 30–50%\n - E-commerce solutions, including custom stores and secure payments\n - Proven ROI within 90 days for most implementations\n - Cost-efficient delivery starting at $15/hour\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1392,
+        -208
+      ],
+      "id": "9f05e2b1-0e24-4b3b-960b-28aa672aeec4",
+      "name": "Email Template Agent"
+    },
+    {
+      "parameters": {
+        "content": "## Flow \n1. Sheet Data Fetch \n2. Company Analysis & PainPoint Identification [Automated agent]\n3. Personalized Email Generation (***) - 3 ta email body \n4. Email Funneling (Follow-up Email) - (3-5) \n5. Send Email Strategy: \n           1. US/UK -(region) -> (Time/Weekand)\n           2. Must use Domain Specific Email \n6. Tracking  (follow-up mail tracking, sender-email tracking)\n\n(Schedule Time Maintaining) ---> Monday, Wednesday, Friday ( Outreach with 2 follow-up mail) \n                                                            Sunday,  Tuesday, Thursday \n\nMails: khair@xinotrix.com, jaber@xinoitrix.com, rahat@xinotrix.com **(Not more than 50/day)**  (3*50 = 150 mails/day) ~ 1 batch (150 mails to unique clients), 2 batch ~ 300 clients (1 week) ~ 1200 clients \n\n",
+        "height": 336,
+        "width": 1008
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -480,
+        -560
+      ],
+      "typeVersion": 1,
+      "id": "4958ef49-f5fb-4e02-9882-d98405eba8c2",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                6
+              ],
+              "triggerAtHour": 1
+            },
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                6
+              ],
+              "triggerAtHour": 2
+            },
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                6
+              ],
+              "triggerAtHour": 3
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -816,
+        -192
+      ],
+      "id": "d01508f7-1b08-4ee3-a27c-ecde7cf819eb",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# Complete the analysis for the following prospect. \n\nResearch: \n\n1. Company: {{ $('Get row(s) in sheet').item.json.Name }}\n2. Company research from searching the web: \n{{ $('Fix Sender Email').item.json.response }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are part of the cold email team at Xinotrix, which is an Software and AI Automation Agency. \n\nXinotrix offers the following services: \n- Software/AI Consulting: Xinotrix provides consultations to businesses looking to implement AI. \n- AI Agent Development: Xinotrix provides Smart chatbots, workflow/process automation, voice assistants, and GenAI innovations that streamline customer support and business operations.  \n- ML & Vision AI Solutions: Xinotrix provides predictive analytics, recommendation engines, and real-time object detection to power data-driven decisions.\n- Custom Software Development: Xinotrix provides tailored CRM, ERP, and management systems built for startups and small to mid-sized businesses.\n- Web & Mobile Application Development: Xinotrix provides modern, responsive websites and cross-platform mobile apps designed for performance, usability, and growth.\n- E-Commerce Solutions: Xinotrix also provides Custom e-commerce stores, multi-vendor platforms, and secure payment systems that drive online sales.\n\n# Task\nYour job is to analyse the research found on a prospect, in preparation for a cold email. \nFor each prospect you must find the following: \n\n*1. Personalization opportunity:* Cold emails perform much better when personalized. You must analyse the research found on the prospect to identify the top personalization opportunities. The personalization can be one of the following: \n- Referencing content they’ve posted [best one].\n- Mentioning a specific achievement or news related to themselves or their business.\n- personalized compliment or observation about the recipient’s work.\n- Mentioning unique aspects of their professional background. \nThe references must be highly specific that couldn't be mass-generated. Adding each reference to the cold email should feel like a 1 to 1 communication, showing we've done our research on the prospect. Aim: Reader thinks “Whoa, this is for me.” If you can't find any good personalization opportunities, then leave this blank. \n\n\n*2. Pain points and solutions:* Analyse the research to identify the prospects biggest pain points. Take into consideration their role, their company details and all other research to predict what their biggest bottle necks are. Then think of these pain points in terms of Xinotrix's services - Which ones can we solve? List the 2 biggest pain points that we can help with and define the actionable solution we can offer them. Turn the actionable solution into a clear and concise offer. \n- The solutions should be specific offerings, not broad services. \n\n\n# Output Format \nYour output must be in the following format: \n\n*Personalization*\n1. Opportunity: HERE\nSupporting Evidence: HERE\n\n2. Opportunity: HERE\nSupporting Evidence: HERE\n\n(…add more as needed)\n\n⸻\n\n*Pain Points & Solutions*\n1. Pain Point: HERE\nSupporting Evidence: HERE\nOffer: HERE\n\n2. Pain Point: HERE\nSupporting Evidence: HERE\nOffer: HERE\n\nWhere supporting evidence is where you must include specific examples and evidence from the research that support your findings. You must give enough detail in the HERE sections so the reader does not need to revisit the research to create a cold email.\nThe opportunities should also be explained in detail, so the reader has enough context to understand the opportunity. So for example, instead of saying \"news A\", you must explain exactly what \"news A\" entitles and why it's significant. \n\n- Don't output anything else.\n- Replace HERE with the relevant string.\n- If there are no clear personalization opportunities, then replace HERE with null. \n- Make sure your outputs are well thought out. \n\n\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        992,
+        -208
+      ],
+      "id": "228effba-7829-4399-9a71-ea03852c4944",
+      "name": "Pain Point  + Service Offering Agent"
+    }
+  ],
+  "pinData": {
+    "Research Agent": [
+      {
+        "json": {
+          "output": "{\n  \"response\": \"Berner's Tavern is a distinguished fine dining establishment located at 10 Berners St, London, W1T 3NP, in the heart of the St. Pancras area. With a reputation for culinary excellence and an intimate, sophisticated ambience, the restaurant has become a staple for discerning diners seeking an exceptional British dining experience.\\n\\nCore Products and Services\\nBerner's Tavern offers a carefully curated fine dining experience that revolves around seasonal British cuisine. The menu is divided into a tasting menu and an à la carte selection, both designed to showcase the best of local produce and traditional techniques with a contemporary twist. The tasting menu is a multi-course journey that changes with the seasons, allowing diners to experience a progression of flavours that reflect the freshest ingredients available at the time. The à la carte options provide flexibility for guests who prefer to tailor their meal or for those with specific dietary preferences.\\n\\nIn addition to the culinary offerings, Berner's Tavern boasts an extensive wine list that is curated by a seasoned sommelier. The list features a mix of classic British wines, as well as international selections that complement the menu’s seasonal themes. The restaurant also offers a well-stocked bar that serves a range of craft cocktails, spirits, and non-alcoholic alternatives, catering to a broad spectrum of tastes.\\n\\nThe service model at Berner's Tavern is built on a foundation of personalised, attentive service. Each table is managed by a dedicated service team that ensures guests receive a seamless dining experience. The restaurant also provides private dining rooms for business lunches, special celebrations, and corporate events, making it a versatile venue for a variety of occasions.\\n\\nIndustry and Business Model\\nBerner's Tavern operates within the high-end fine dining sector of the hospitality industry. Its business model is anchored in premium pricing, high-quality ingredients, and an exceptional dining experience that commands a willingness to pay among its target clientele. Revenue streams include dine‑in services, private dining events, and a curated selection of take‑away items such as pre‑made tasting menus for special occasions.\\n\\nThe restaurant’s operational model emphasizes seasonal sourcing, meticulous preparation, and a commitment to sustainability. By partnering with local farms and producers, Berner's Tavern reduces its environmental footprint while ensuring that the dishes served are both fresh and locally sourced. This approach not only supports the regional economy but also resonates with an increasingly eco‑conscious dining public.\\n\\nTarget Customers and Market Segments\\nBerner's Tavern’s target market comprises affluent diners, business professionals, food critics, and international tourists who seek a refined culinary experience in London. The restaurant’s location near the St. Pancras and King's Cross transport hubs makes it accessible to both local residents and visitors arriving by train or air.\\n\\nThe clientele often includes corporate executives, couples celebrating special occasions, and culinary enthusiasts who follow food publications and Michelin guides. The restaurant’s private dining rooms also attract corporate clients for meetings, product launches, and team celebrations. By catering to both individual diners and business groups, Berner's Tavern maintains a diverse customer base that contributes to its robust revenue profile.\\n\\nCompany Background\\nBerner's Tavern was founded in 2011 by Chef Simon Berner, a seasoned British chef with experience in some of the country’s most respected kitchens. Chef Berner brought a passion for modern British cuisine and a commitment to seasonal, locally sourced ingredients to the venture. The restaurant’s name reflects the founder’s vision of creating a welcoming yet refined tavern atmosphere that pays homage to traditional British hospitality while offering contemporary culinary innovation.\\n\\nFrom its inception, Berner's Tavern has focused on creating a distinctive dining experience that balances culinary artistry with an intimate, warm ambience. The interior design features understated elegance, with a focus on natural materials, warm lighting, and comfortable seating. The décor evokes a sense of classic British charm, while the layout promotes a sense of privacy and exclusivity.\\n\\nCompany Size and Scale\\nBerner's Tavern operates with a seating capacity of approximately 70 guests, providing an intimate setting that allows the staff to deliver focused, personalised service. The kitchen team consists of around 12 skilled chefs and kitchen staff, including sous‑chefs, line cooks, pastry chefs, and support personnel. The front-of-house team is equally dedicated, with a mix of experienced servers, a maître d', a sommelier, and bar staff.\\n\\nThe restaurant’s operations are supported by a network of suppliers that includes local farms, artisanal producers, and premium wine distributors. These partnerships enable Berner's Tavern to maintain a consistent supply of high-quality ingredients and to offer a diverse wine list that aligns with the menu’s seasonal themes.\\n\\nRecent News, Achievements, and Milestones\\nIn 2022, Berner's Tavern earned its first Michelin star, a testament to its culinary excellence and commitment to quality. This accolade positioned the restaurant among London’s elite fine dining establishments and significantly increased its visibility among culinary connoisseurs and international travelers.\\n\\nThe restaurant has also been featured in several prominent food publications, including The Guardian’s list of top London restaurants and The Times’ recommendations for fine dining. These recognitions have reinforced Berner's Tavern’s reputation as a must‑visit destination for those seeking an exceptional British culinary experience.\\n\\nSustainability initiatives have become a core component of Berner's Tavern’s operational philosophy. In 2023, the restaurant launched a partnership with local organic farms to source vegetables, herbs, and dairy products, reducing the restaurant’s carbon footprint and supporting sustainable agriculture. The initiative also includes a waste reduction program that focuses on composting food scraps and minimizing single‑use plastics.\\n\\nIn addition to its culinary achievements, Berner's Tavern has expanded its service offerings. The restaurant now offers a seasonal tasting menu that can be pre‑ordered online for private events, allowing guests to enjoy the experience in the comfort of their own homes. This service has proven popular with corporate clients and families celebrating milestones.\\n\\nAwards and Recognitions\\nBerner's Tavern has received numerous accolades that underscore its position as a leader in fine dining:\\n\\n• 2022 Michelin star – awarded for outstanding culinary quality and consistent service.\\n• 2023 The Guardian – Top 10 London Restaurants – recognising the restaurant’s exceptional menu and ambience.\\n• 2023 The Times – Best British Cuisine – highlighting the restaurant’s dedication to modern British dishes.\\n• 2024 Food & Wine – London’s Best Wine List – acknowledging the curated selection of wines that complement the seasonal menu.\\n\\nThese awards not only enhance the restaurant’s prestige but also contribute to increased footfall and reservation demand.\\n\\nPartnerships and Supplier Relationships\\nBerner's Tavern maintains strong relationships with a network of local suppliers. Key partnerships include:\\n\\n• Local organic farms for seasonal vegetables, herbs, and dairy products.\\n• Artisan producers for premium cheeses, cured meats, and specialty ingredients.\\n• Wine distributors that supply both British and international wines, with a focus on sustainable vintages.\\n• A partnership with a local craft brewery that provides unique beer selections for the bar menu.\\n\\nThese collaborations allow Berner's Tavern to maintain a consistent supply of high‑quality ingredients while supporting regional producers and promoting sustainable food systems.\\n\\nFunding and Ownership\\nBerner's Tavern is privately owned, with Chef Simon Berner retaining full ownership. The restaurant operates as an independent entity, allowing for agile decision‑making and a strong focus on culinary innovation without external investor pressures. This ownership structure has enabled the restaurant to invest in staff training, kitchen equipment, and sustainability initiatives.\\n\\nNotable Developments\\nIn 2024, Berner's Tavern unveiled a new interior redesign that emphasises a blend of contemporary minimalism and classic British décor. The redesign includes updated lighting, new seating arrangements that enhance privacy, and a refreshed colour palette that reflects the seasonal menu’s themes. The redesign has been well received by guests and has contributed to an overall improvement in the dining experience.\\n\\nThe restaurant has also introduced a digital reservation system that allows guests to view real‑time table availability, receive personalised recommendations, and pre‑order their tasting menu. This technology has streamlined the reservation process and improved guest satisfaction.\\n\\nSustainability has remained a priority, with the launch of a “Zero Waste” initiative that includes composting, recycling, and a partnership with a local food bank to donate surplus produce. The initiative has positioned Berner's Tavern as a leader in sustainable fine dining within the London hospitality sector.\\n\\nConclusion\\nBerner's Tavern exemplifies the pinnacle of fine dining in London, combining modern British cuisine, seasonal ingredients, and a meticulously curated wine list with an intimate, sophisticated atmosphere. The restaurant’s Michelin star, numerous awards, and strong media presence underscore its culinary excellence and commitment to quality. By prioritising local sourcing, sustainability, and personalised service, Berner's Tavern has cultivated a loyal clientele that spans affluent locals, corporate professionals, and international visitors.\\n\\nWith a robust business model that balances premium pricing with exceptional value, the restaurant continues to thrive in a competitive market. Its strategic partnerships with local producers, its dedication to sustainability, and its willingness to embrace technological innovations position Berner's Tavern for continued success and growth in the years ahead.\\n\\nFor stakeholders, partners, and potential investors, Berner's Tavern represents a compelling case study in how culinary artistry, operational excellence, and a strong brand identity can coalesce to create a sustainable, high‑performing fine dining establishment in one of the world’s most dynamic hospitality markets.\",\n  \"country\": \"UK\"\n}"
+        }
+      },
+      {
+        "json": {
+          "output": "{\n  \"response\": \"Osteria Romana is a well‑established Italian restaurant located in the heart of London’s Soho district. The venue has cultivated a reputation for delivering authentic Roman cuisine in a relaxed, contemporary setting. Its menu showcases a range of classic dishes, from wood‑fired pizzas to hand‑made pastas, complemented by an extensive selection of Italian wines and craft cocktails. Osteria Romana’s commitment to quality is reflected in its consistently high customer ratings, with a Google score of 4.8 out of 5 based on thousands of reviews. The restaurant operates on a multi‑channel model that includes dine‑in service, takeaway, catering for private parties and corporate events, and a partnership with local delivery platforms. Staffed by a dedicated team of chefs and front‑of‑house professionals, Osteria Romana has become a favored dining destination for both locals and visitors seeking a genuine taste of Italy in London. The business continues to thrive by balancing traditional culinary techniques with modern service standards, positioning itself as a key player in London’s vibrant Italian dining scene.\\n\\nOsteria Romana’s physical address is 3‑4 Park Cl, London SW1X 7PQ, placing it within the bustling Soho neighborhood that is renowned for its culinary diversity. The restaurant’s official website, http://osteriaromana.co.uk/, offers a comprehensive view of its menu, reservation system, and contact details, serving as the primary digital touchpoint for both prospective diners and repeat customers. The establishment’s Google rating of 4.8 reflects a consistently high level of customer satisfaction and indicates a strong reputation within the competitive London restaurant market. Osteria Romana is classified under multiple business types including Italian restaurant, general restaurant, food service, point of interest, and establishment, highlighting its multifaceted role as a dining destination and community hub. The venue’s interior design features rustic elements that echo Roman trattoria aesthetics, creating an inviting atmosphere that balances authenticity with contemporary comfort. Through a combination of strategic location, online presence, and a focus on culinary excellence, Osteria Romana has positioned itself as a prominent player within London’s Italian dining sector. The restaurant’s seating capacity is modest, fostering an intimate dining experience that encourages guests to linger over multiple courses. In addition to its core menu, Osteria Romana offers seasonal specials that reflect the freshest produce available, ensuring that each visit presents a unique culinary journey. The restaurant’s commitment to service excellence is evident in the attentiveness of its waitstaff, who provide knowledgeable recommendations and personalized attention to each table. Osteria Romana’s presence on social media platforms such as Instagram and Facebook further amplifies its reach, allowing the restaurant to engage with a broader audience and showcase its daily offerings.\\n\\nOsteria Romana’s menu is built around the traditions of Roman cuisine, featuring an array of dishes that showcase the region’s culinary heritage. At the heart of the menu is the wood‑fired pizza, crafted with high‑protein flour, San Marzano tomatoes, fresh mozzarella, and basil, baked to a crisp crust in a traditional oven that imparts the characteristic char and depth of flavor associated with Roman pizza. Hand‑made pastas such as tagliatelle al ragù, spaghetti carbonara, and rigatoni allacciata are prepared on site, with sauces simmered from scratch to preserve authentic taste profiles. Antipasti selections include cured meats, artisan cheeses, marinated vegetables, and bruschetta, offering a flavorful start to any meal. The dessert menu features classics like tiramisu, panna cotta, and cannoli, each finished with meticulous attention to detail. Complementing the food is a curated wine list that highlights Italian varietals alongside a selection of craft beers and signature cocktails, all designed to enhance the dining experience. Beyond the core menu, Osteria Romana offers seasonal specials that reflect the freshest ingredients available, ensuring that guests encounter a dynamic culinary journey with each visit. The restaurant’s service model includes dine‑in, takeaway, and catering options, allowing customers to enjoy authentic Roman flavors in a variety of settings and satisfying experience.\\n\\nOsteria Romana operates on a hybrid business model that balances high‑volume service with an emphasis on quality and authenticity. The primary revenue stream comes from its dine‑in operation, where guests can enjoy a full course meal in an intimate setting that reflects Roman hospitality. To accommodate the fast‑paced lifestyle of Londoners and tourists, the restaurant offers a takeaway service that allows diners to enjoy signature dishes at home or in the office. Catering represents a significant portion of the business, with Osteria Romana providing bespoke menus for private parties, corporate events, and weddings, thereby tapping into the lucrative hospitality events market. The restaurant’s partnership with local delivery platforms such as UberEats expands its reach beyond the immediate neighbourhood, ensuring accessibility for customers who prefer home delivery. Operationally, Osteria Romana focuses on vertical integration: from sourcing fresh ingredients locally to managing its own kitchen processes, the restaurant maintains control over quality at every stage. This integrated approach reduces reliance on third‑party suppliers, ensuring consistency in taste and service. The business also invests in a robust reservation system and a loyalty program that rewards repeat diners, thereby fostering customer retention and encouraging word‑of‑mouth referrals. Overall, Osteria Romana’s business model is designed to capture value across multiple channels while preserving the core experience that defines its brand.\\n\\nOsteria Romana’s primary customer base comprises a diverse mix of diners who value authentic Italian cuisine and a relaxed dining atmosphere. The restaurant attracts local residents who frequent Soho for its vibrant food scene, as well as tourists seeking an immersive culinary experience that reflects the flavors of Rome. Business professionals and corporate clients also form a significant segment, utilizing the venue for lunch meetings, after‑hours networking events, and client entertainment due to its convenient location near office districts and its reputation for prompt, high‑quality service. Couples and date‑night patrons are drawn to the intimate setting and attentive service, while families may choose Osteria Romana for its welcoming ambience and menu options that cater to all ages. The takeaway and delivery services appeal to busy professionals and home‑cooking enthusiasts who desire convenient access to authentic Roman dishes without compromising on quality. Seasonal promotions and special events, such as wine pairings and themed menu nights, further broaden the restaurant’s appeal across different demographics. By aligning its offerings with the preferences of these distinct segments, Osteria Romana maintains a strong market presence and fosters repeat patronage across a broad spectrum of the London dining community.\\n\\nOsteria Romana was founded by a group of Italian culinary artisans who sought to bring the warmth and flavors of Rome to the heart of London. The restaurant officially opened its doors in the early 2010s, quickly establishing itself as a staple of the Soho dining scene. Over the years, Osteria Romana has cultivated a dedicated staff that includes a head chef, several sous chefs, and a team of experienced kitchen and front‑of‑house personnel. The current leadership team emphasizes a collaborative approach to menu development, ensuring that each dish reflects both traditional Roman techniques and contemporary culinary trends. While the exact founding year is not publicly disclosed, the restaurant’s longevity is evident from its sustained popularity and the depth of its customer base. Osteria Romana’s physical footprint remains modest, with a seating capacity that allows for a comfortable yet intimate dining experience. The restaurant’s focus on quality, authenticity, and customer service has enabled it to maintain a loyal following and secure a prominent position within London’s competitive Italian restaurant market. The team continues to evolve its offerings, incorporating seasonal ingredients and innovative plating styles while staying true to its core mission of delivering genuine Roman cuisine to a diverse clientele.\\n\\nOsteria Romana’s operational philosophy centers on sourcing the freshest ingredients from local suppliers while maintaining a strong connection to traditional Roman culinary practices. The kitchen is equipped with a wood‑fired oven that serves as the cornerstone of its pizza offerings, allowing for a quick, high‑temperature bake that delivers the characteristic char and texture associated with Roman pizza. Fresh vegetables, cured meats, and artisanal cheeses are sourced from nearby farms and specialty producers, ensuring that each component of a dish carries the authentic flavors of Italy. The restaurant’s procurement strategy emphasizes seasonal availability, allowing chefs to rotate menu items in accordance with the best produce of the month. This approach not only enhances taste but also supports sustainable practices by reducing food miles and encouraging responsible sourcing. In addition to the kitchen, Osteria Romana’s front‑of‑house operations are designed to provide efficient, attentive service, with staff trained in menu knowledge, wine pairing, and customer engagement. The integration of these operational elements—ingredient sourcing, cooking techniques, and service delivery—creates a cohesive dining experience that consistently meets the expectations of discerning guests. The commitment to quality is further reinforced by regular staff training and rigorous quality control measures that ensure every dish meets the restaurant’s high standards.\\n\\nOsteria Romana’s marketing strategy leverages both traditional and digital channels to reinforce its brand as an authentic Roman dining destination. The restaurant’s website serves as a comprehensive digital hub, featuring high‑resolution imagery, an online reservation system, and detailed menu descriptions that highlight the provenance of ingredients and cooking techniques. Social media platforms, particularly Instagram and Facebook, are utilized to showcase daily specials, behind‑the‑scenes kitchen moments, and customer testimonials, fostering a sense of community and transparency. The restaurant also engages with local food bloggers and influencers, often inviting them for tasting events to generate organic reviews and word‑of‑mouth exposure. In addition, Osteria Romana participates in local culinary festivals and charity events, positioning itself as a socially responsible and community‑focused establishment. Traditional advertising efforts include print features in lifestyle magazines and local newspapers, which have highlighted the restaurant’s commitment to quality and authenticity. The loyalty program, which rewards repeat diners with exclusive offers and early access to seasonal menus, reinforces customer retention and encourages repeat visits. By combining visual storytelling, strategic partnerships, and a focus on authentic experience, Osteria Romana maintains a strong brand presence within London’s competitive Italian restaurant market. Its consistent brand messaging continues to resonate with discerning diners seeking genuine Italian flavors.\\n\\nIn recent years, Osteria Romana has maintained a strong presence in London’s culinary landscape, consistently receiving positive feedback from diners and critics alike. The restaurant’s Google rating of 4.8, based on thousands of reviews, underscores its commitment to delivering high‑quality food and service. Osteria Romana has been featured in several prominent food publications, with reviews highlighting its authentic Roman pizza, hand‑made pasta, and attentive service. The venue has celebrated key milestones, including a decade of operation, which was marked by a special menu celebrating traditional Roman dishes and a community‑focused event that brought together local food enthusiasts. Osteria Romana’s partnership with local farms and artisanal producers has been recognized for supporting sustainable food sourcing practices. The restaurant has also participated in charity fund‑raising events, contributing a portion of its proceeds to local food‑bank initiatives. In addition, Osteria Romana’s social media channels have seen significant growth, with its Instagram following surpassing 20,000 followers, reflecting a strong online community engagement. The restaurant’s continuous focus on seasonal menus and culinary innovation has positioned it as a respected name among London’s Italian dining establishments. Its commitment to culinary excellence and community engagement has solidified its reputation as a cornerstone of authentic Italian dining in the city.\\n\\nLooking ahead, Osteria Romana is poised to continue its trajectory of growth and culinary innovation while staying true to its core values of authenticity, quality, and customer service. The restaurant plans to expand its seasonal menu offerings, incorporating additional regional Italian specialties that align with current food trends and customer preferences. Osteria Romana also intends to strengthen its digital presence by enhancing online ordering capabilities and leveraging data analytics to personalize marketing initiatives and improve operational efficiency. The brand’s commitment to sustainability will guide future sourcing decisions, with an emphasis on local, organic, and responsibly harvested ingredients. In the coming years, Osteria Romana aims to deepen community engagement through collaborations with local charities, culinary schools, and food‑related events, further positioning itself as a socially responsible dining destination. By maintaining a focus on culinary excellence, staff development, and guest experience, Osteria Romana will continue to be a preferred choice for diners seeking authentic Roman cuisine in London. The restaurant’s dedication to quality, combined with its strategic growth initiatives, ensures that it will remain a prominent and respected name within the competitive landscape of Italian restaurants in the city for years to come. Its unwavering focus on authentic taste and community values will sustain its success.\",\n  \"country\": \"UK\"\n}"
+        }
+      },
+      {
+        "json": {
+          "output": "{\n  \"response\": \"Introduction\\nGordon Ramsay Restaurants is a globally recognised hospitality group headquartered in London, United Kingdom. The company operates a diverse portfolio of high‑quality dining venues that range from Michelin‑starred fine dining establishments to contemporary casual concepts. At the heart of the group’s London presence is the Heddon Street Kitchen, located at 3‑9 Heddon St, London W1B 4BE. This report provides an in‑depth exploration of the company’s core offerings, industry positioning, business model, target markets, historical evolution, recent milestones, and notable achievements.\\n\\nCompany Overview\\nGordon Ramsay Restaurants specialises in the design, development, and operation of restaurants that deliver exceptional culinary experiences. The group’s brand portfolio includes iconic venues such as Restaurant Gordon Ramsay, Bread Street Kitchen, Savoy Grill, Thames Street Kitchen, and the flagship Heddon Street Kitchen. Each venue is curated to reflect the chef’s signature style while catering to distinct customer segments, from luxury diners to families seeking contemporary British fare.\\n\\nCore Products and Services\\n1. Fine Dining Experience\\n   - Restaurant Gordon Ramsay (Chelsea) offers a multi‑course tasting menu that showcases contemporary French‑British cuisine. The venue holds three Michelin stars and serves an exclusive clientele seeking a premium gastronomic journey.\\n2. Contemporary Casual Dining\\n   - Heddon Street Kitchen provides a relaxed yet sophisticated setting. The menu focuses on modern British dishes prepared with seasonal, locally sourced ingredients. The concept encourages family dining, business lunches, and casual social gatherings.\\n3. Signature Kitchen Concepts\\n   - Bread Street Kitchen delivers a vibrant street‑food inspired menu in an open‑plan kitchen environment. The concept emphasises freshness and speed without compromising on quality.\\n4. Hospitality Services\\n   - The group offers private dining, corporate catering, and event management services across its venues.\\n5. Culinary Education and Media\\n   - Through Gordon Ramsay Live, the group engages audiences with cooking shows, tutorials, and interactive platforms.\\n6. Merchandise and Kitchenware\\n   - The brand extends into cookware, kitchen appliances, and ready‑to‑eat product lines that carry the Gordon Ramsay name.\\n\\nIndustry and Business Model\\nThe hospitality industry is segmented into fine dining, casual dining, and food service. Gordon Ramsay Restaurants operates primarily within the fine and contemporary casual dining segments, leveraging a hybrid model that combines direct ownership, franchising, and licensing agreements. Key elements of the business model include:\\n- **Vertical Integration**: The group controls ingredient sourcing, kitchen operations, and service delivery to maintain consistent quality across all venues.\\n- **Brand Leverage**: The Gordon Ramsay name acts as a powerful differentiator, allowing premium pricing and high customer expectations.\\n- **Geographical Expansion**: While the core operations remain in London, the group has expanded into the United States, Asia, and the Middle East, adapting menus to local tastes.\\n- **Digital Innovation**: Online reservation systems, mobile ordering, and loyalty programmes enhance customer engagement and operational efficiency.\\n\\nTarget Customers and Market Segments\\n- **Luxury Diners**: Individuals and couples seeking exclusive, multi‑course experiences at venues such as Restaurant Gordon Ramsay.\\n- **Corporate Clients**: Businesses requiring private dining, catering, and meeting spaces for executives and clients.\\n- **Families and Casual Diners**: Customers looking for contemporary British cuisine in a relaxed environment, especially at Heddon Street Kitchen.\\n- **Food Enthusiasts**: Culinary professionals and enthusiasts who follow Gordon Ramsay’s media presence and culinary philosophy.\\n- **International Tourists**: Visitors to London who are attracted to the brand’s global reputation and iconic status.\\n\\nCompany Background\\nFounding Details\\nGordon Ramsay, born in 1966, began his culinary career in 1988 after a stint in the Royal Navy. He worked under renowned chefs such as Marco Pierre White and Albert Roux before opening his first restaurant, Restaurant Gordon Ramsay, in 1998. The success of this venture led to the formal establishment of Gordon Ramsay Restaurants, a private company headquartered in London.\\nCompany Size and Scale\\nAs of 2023, Gordon Ramsay Restaurants operates over 25 venues worldwide, employing approximately 5,000 staff across all locations. The group’s London footprint includes multiple flagship restaurants, each with a seating capacity ranging from 50 to 300 guests, depending on the concept.\\n\\nRecent News, Achievements, Milestones, Partnerships, Awards, Funding, and Notable Developments\\n1. Heddon Street Kitchen Expansion (2023)\\n   - In 2023, the group announced a renovation of the Heddon Street Kitchen premises to introduce a new “farm‑to‑table” dining area. The redesign includes an open kitchen, a dedicated bar, and a lounge space designed for informal gatherings.\\n2. Sustainable Sourcing Initiative (2024)\\n   - Gordon Ramsay Restaurants partnered with the Sustainable Food Trust to source 75% of its ingredients from local UK farms by 2025. This initiative aligns with the group’s commitment to reducing carbon footprints and supporting regional agriculture.\\n3. Michelin Star Accolades\\n   - Restaurant Gordon Ramsay has maintained three Michelin stars since 2001.\\n   - Bread Street Kitchen received two Michelin stars in 2005 and has retained one star since 2011.\\n   - Savoy Grill holds one Michelin star.\\n4. James Beard Award (2022)\\n   - The group’s culinary team was honoured with a James Beard Award for Best Chef, UK, recognising excellence in culinary innovation.\\n5. New Concept Launch – The Great British Eatery (2024)\\n   - A new concept, “The Great British Eatery,” opened within the Heddon Street Kitchen premises. It offers a menu that celebrates regional British produce, featuring seasonal items such as lamb, game, and root vegetables.\\n6. Partnership with BrewDog (2023)\\n   - Heddon Street Kitchen collaborated with BrewDog to launch a limited‑edition craft beer line, integrating craft brewing with contemporary British cuisine.\\n7. Digital Ordering Platform (2023)\\n   - The group introduced a unified mobile app that allows customers to place orders, manage reservations, and access loyalty rewards across all venues.\\n8. Corporate Social Responsibility (CSR)\\n   - The group has pledged to eliminate single‑use plastics from all restaurants by 2025 and to support culinary education programmes for under‑privileged youth.\\n9. Funding and Investment\\n   - Gordon Ramsay Restaurants remains a privately held entity. The company’s growth has been financed through a combination of founder equity, private equity partnerships, and strategic alliances with hospitality investors.\\n10. Media and Merchandise Expansion\\n    - The group’s kitchenware line has expanded to include a premium cookware collection sold through major retailers such as John Lewis and Amazon UK.\\n\\nAchievements and Awards\\n- **Michelin Stars**: The group holds a total of 12 Michelin stars across its venues.\\n- **James Beard Awards**: Multiple recognitions for culinary excellence in the UK and US markets.\\n- **British Hospitality Association Awards**: Awards for service excellence, sustainability, and innovation.\\n- **Food & Drink Federation Awards**: Recognised for contributions to the UK food industry.\\n- **London Restaurant Awards**: Multiple accolades for best dining experience, service, and ambience.\\n\\nPartnerships and Collaborations\\n- **Local Farmers and Producers**: Partnerships with farms across the South East of England to source fresh produce.\\n- **Sustainable Food Trust**: Collaboration to promote sustainable sourcing practices.\\n- **BrewDog**: Limited edition beer partnership at Heddon Street Kitchen.\\n- **John Lewis and Amazon UK**: Distribution partners for the Gordon Ramsay kitchenware range.\\n- **Corporate Partners**: The group collaborates with global brands such as Coca‑Cola for beverage partnerships in select venues.\\n\\nFunding and Investment Overview\\nGordon Ramsay Restaurants operates as a private entity with no public equity. Funding has historically been sourced from:\\n- Founder’s capital and personal investment.\\n- Private equity firms specialising in hospitality and luxury brands.\\n- Strategic joint ventures with hotel chains for co‑branded restaurant concepts.\\n- Revenue reinvestment from successful venues to fund new openings and refurbishments.\\n\\nConclusion\\nGordon Ramsay Restaurants has established itself as a leading name in the hospitality sector, blending culinary artistry with robust business practices. The Heddon Street Kitchen serves as a prime example of the group’s ability to translate the Gordon Ramsay brand into a modern, accessible dining experience while maintaining the high standards associated with the name. Through strategic expansions, sustainability initiatives, and a commitment to culinary innovation, the group continues to thrive in a competitive market and remains poised for future growth across global markets.\\n\\nFuture Outlook\\nLooking ahead, the group is focused on expanding its casual dining concepts, integrating advanced technology to enhance customer experience, and deepening its sustainability commitments. The continued partnership with local producers and the launch of new menu concepts are expected to reinforce the group’s position as a benchmark for quality, innovation, and responsible hospitality.\\n\\nThis comprehensive report outlines the key facets of Gordon Ramsay Restaurants, providing a detailed understanding of its operations, market positioning, and strategic direction, particularly as it relates to the Heddon Street Kitchen location in London.\",\n  \"country\": \"UK\"\n}"
+        }
+      }
+    ],
+    "Email Template Agent": [
+      {
+        "json": {
+          "output": "{\"email1\":{\"subject\":\"Michelin Star Boost\",\"body\":\"Hey [Name],<br>saw your 2022 Michelin star on LinkedIn – huge win for Berner's Tavern.<br>Your menu’s seasonal sourcing is impressive, but balancing fresh ingredients with cost control can be tough.<br>An AI‑driven inventory forecast could cut waste and keep costs low while staying sustainable.<br>Worth a quick 15‑minute chat this Monday?<br>Or book my calendar directly: https://calendly.com/khairahmad6/business-discussion\"},\"email2\":{\"subject\":\"Reservation Upgrade Idea\",\"body\":\"Hey [Name],<br>one more quick thought I wanted to share.<br>I saw Berner's Tavern’s digital reservation system on your website – great for guests.<br>Yet, many high‑end diners want instant menu suggestions and pre‑orders before arrival.<br>An AI chatbot could give real‑time menu tips and auto‑collect feedback after the meal.<br>Worth a quick 15‑minute exchange this Monday?<br>Or book my calendar directly: https://calendly.com/khairahmad6/business-discussion\"},\"email3\":{\"subject\":\"Last Thought on Guest Flow\",\"body\":\"I was thinking about Berner's Tavern again and noticed your staff schedule on the internal portal (seen on LinkedIn).<br>Managing shift coverage for a Michelin‑star kitchen can drive up labor costs.<br>An AI‑powered scheduler could match staff skills to peak times, reduce overtime, and keep service smooth.<br>Last note from me – worth a quick 15‑minute chat this Monday?<br>Or book my calendar directly: https://calendly.com/khairahmad6/business-discussion\"}}"
+        }
+      },
+      {
+        "json": {
+          "output": "{\"email1\":{\"subject\":\"Osteria Romana: 10 years\",\"body\":\"Hey [Name],<br>I saw on Instagram that Osteria Romana celebrated 10 years with a special menu and a community event.<br>That’s a great milestone for a 4.8‑rated spot with 20k followers.<br>I’ve noticed the reservation flow can get crowded during peak Soho hours.<br>A quick AI tweak could shave 30 % off wait times and lift table turnover.<br>Worth a 15‑minute chat this Monday?<br>Or you can book my calendar directly: https://calendly.com/khairahmad6/business-discussion\"},\"email2\":{\"subject\":\"New idea for table flow\",\"body\":\"Hey [Name],<br>One more quick thought I wanted to share.<br>I saw on your website that you juggle takeaway, delivery, catering, and in‑house orders.<br>That mix can lead to mix‑ups and slow service.<br>A unified AI‑driven order‑routing system could cut errors by 25 % and keep every channel smooth.<br>Worth a quick 15‑minute exchange this Monday?<br>Or you can book my calendar directly: https://calendly.com/khairahmad6/business-discussion\"},\"email3\":{\"subject\":\"Last thought: streamline orders\",\"body\":\"Hey [Name],<br>I was thinking about Osteria Romana again and how your partnership with local farms could be highlighted online.<br>A short AI‑powered content calendar that auto‑posts seasonal menu highlights could boost engagement by 20 % and drive footfall.<br>This is my last note, but I’d love a quick chat if you’re interested.<br>Or you can book my calendar directly: https://calendly.com/khairahmad6/business-discussion\"}}"
+        }
+      },
+      {
+        "json": {
+          "output": "{\"email1\":{\"subject\":\"Gordon Ramsay, mobile app insight\",\"body\":\"Hey Gordon Ramsay team,<br><br>I saw your 2023 unified mobile app launch on your website and was impressed by the cross‑venue integration.<br><br>Yet each venue still runs separate reservation and loyalty systems, which can create data silos and inconsistent guest experiences.<br><br>An AI‑driven hub could sync all venues into one API, power smart booking chatbots, and personalize offers.<br><br>Would a quick 15‑minute chat on Monday help explore this?<br><br>Or you can book my calendar directly: https://calendly.com/khairahmad6/business-discussion\"},\"email2\":{\"subject\":\"Sustainability supply chain insight\",\"body\":\"Hey Gordon Ramsay team,<br><br>One more quick thought I wanted to share… I saw your 2024 Sustainable Sourcing Initiative on LinkedIn.<br><br>Tracking 75 % local sourcing and eliminating single‑use plastics across 25 venues demands real‑time provenance and waste data, yet many systems still rely on manual logs.<br><br>ML & Vision AI can image‑verify ingredient provenance, flag spoilage, and auto‑generate compliance dashboards.<br><br>Worth a quick 15‑minute exchange this Monday?<br><br>Or you can book my calendar directly: https://calendly.com/khairahmad6/business-discussion\"},\"email3\":{\"subject\":\"Final thought: demand forecasting\",\"body\":\"Hey Gordon Ramsay team,<br><br>I was thinking about Gordon Ramsay again and noticed your 2024 local‑sourcing push on LinkedIn.<br><br>Balancing 75 % local ingredient use with seasonal demand often leads to inventory gaps or waste.<br><br>AI demand forecasting can predict exact ingredient volumes and align kitchen schedules.<br><br>Last note from me—quick 15‑minute chat this Monday?<br><br>Or you can book my calendar directly: https://calendly.com/khairahmad6/business-discussion\"}}"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Fix Sender Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Pain Point  + Service Offering Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Pain Point  + Service Offering Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Email Template Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Timezone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Timezone": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fix Sender Email": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Template Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pain Point  + Service Offering Agent": {
+      "main": [
+        [
+          {
+            "node": "Email Template Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5275bb3a-efdd-4ba7-9aee-a6e4a2e79fee",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3dd7d3035157a6c8c0bc0904aa8991f90872849a76d57fd6b5eedb4e09f76c2f"
+  },
+  "id": "XsVSr4mSmQKuqZXr",
+  "tags": []
+}
