@@ -1,0 +1,2851 @@
+{
+  "name": "✨🩷Automated Social Media Content Publishing Factory + System Prompt Composition",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d957b006-e6f4-4b80-a5cd-3a991ca861f1",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        -2496,
+        208
+      ],
+      "webhookId": "faddb40a-7048-4398-a0f9-d239a19c32ce",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "content": "## LLM",
+        "height": 240,
+        "color": 7
+      },
+      "id": "3717f8c1-7494-453a-9bf4-d58397edf851",
+      "name": "Sticky Note20",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2576,
+        560
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Chat Memory",
+        "height": 240,
+        "color": 7
+      },
+      "id": "872388f3-63fa-479e-aecc-04f749fd5419",
+      "name": "Sticky Note21",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2576,
+        832
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 👍Start Here",
+        "height": 280,
+        "width": 300,
+        "color": 4
+      },
+      "id": "471abdb7-8797-41e1-9c74-f095e9d47ad9",
+      "name": "Sticky Note22",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2608,
+        128
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Social Media Publishing Router",
+        "height": 420,
+        "width": 340,
+        "color": 2
+      },
+      "id": "8f09bfb6-6b3c-407a-90d6-1066e910e044",
+      "name": "Sticky Note32",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        288
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 1️⃣ X - Twitter",
+        "height": 240,
+        "color": 6
+      },
+      "id": "35de9e03-c587-4117-9942-23abca55990a",
+      "name": "Sticky Note33",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2288,
+        640
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "name": "create_x_twitter_posts_tool",
+        "description": "Use this tool to create XTwitter posts",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $workflow.id }}"
+        },
+        "fields": {
+          "values": [
+            {
+              "name": "route",
+              "stringValue": "=xtwitter"
+            },
+            {
+              "name": "user_prompt",
+              "stringValue": "={{ $('When chat message received').item.json.chatInput }}"
+            }
+          ]
+        },
+        "jsonSchemaExample": ""
+      },
+      "id": "983d3a17-1f35-46c2-a6d4-be716801ac54",
+      "name": "X-Twiter",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "position": [
+        -2208,
+        752
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "content": "## 2️⃣ Instagram",
+        "height": 240,
+        "color": 6
+      },
+      "id": "9db24c99-cbb4-4b25-b1ab-c429237133b7",
+      "name": "Sticky Note34",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2016,
+        640
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "name": "create_instagram_posts_tool",
+        "description": "Use this tool to create Instagram posts",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $workflow.id }}"
+        },
+        "fields": {
+          "values": [
+            {
+              "name": "route",
+              "stringValue": "=instagram"
+            },
+            {
+              "name": "user_prompt",
+              "stringValue": "={{ $('When chat message received').item.json.chatInput }}"
+            }
+          ]
+        },
+        "jsonSchemaExample": ""
+      },
+      "id": "692b101c-5c9a-446f-86ad-3490d40d60e2",
+      "name": "Instagram",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "position": [
+        -1936,
+        752
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {},
+      "id": "95bfbef1-c7db-4295-a148-0a6f23279859",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        -2496,
+        928
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "user_prompt"
+            },
+            {
+              "name": "route"
+            }
+          ]
+        }
+      },
+      "id": "eab3b3ee-3932-4a70-bddf-adc0a348703c",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -2688,
+        1728
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "content": "## 3️⃣ Facebook",
+        "height": 240,
+        "color": 6
+      },
+      "id": "5518cf0d-0bc9-408f-b311-5065c8e2e3d2",
+      "name": "Sticky Note35",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1760,
+        640
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 4️⃣ LinkedIn",
+        "height": 240,
+        "color": 6
+      },
+      "id": "d74e7d82-27d1-4ec9-aa1b-4a205494c5ac",
+      "name": "Sticky Note36",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1504,
+        640
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "name": "create_facebook_posts_tool",
+        "description": "Use this tool to create Facebook posts",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $workflow.id }}"
+        },
+        "fields": {
+          "values": [
+            {
+              "name": "route",
+              "stringValue": "=facebook"
+            },
+            {
+              "name": "user_prompt",
+              "stringValue": "={{ $('When chat message received').item.json.chatInput }}"
+            }
+          ]
+        },
+        "jsonSchemaExample": ""
+      },
+      "id": "583ae97a-9d4d-448c-8da6-9a3f80034d9c",
+      "name": "Facebook",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "position": [
+        -1680,
+        752
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "name": "create_linkedin_posts_tool",
+        "description": "Use this tool to create LinkedIn posts",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $workflow.id }}"
+        },
+        "fields": {
+          "values": [
+            {
+              "name": "route",
+              "stringValue": "=linkedin"
+            },
+            {
+              "name": "user_prompt",
+              "stringValue": "={{ $('When chat message received').item.json.chatInput }}"
+            }
+          ]
+        },
+        "jsonSchemaExample": ""
+      },
+      "id": "2e06e9ba-3f2f-4be1-ab7e-1ddfb9ff16c6",
+      "name": "LinkedIn",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "position": [
+        -1424,
+        752
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "content": "## 5️⃣Threads",
+        "height": 240,
+        "color": 6
+      },
+      "id": "c7bf15a4-7106-44ba-b91d-ed2d8a6480bf",
+      "name": "Sticky Note37",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2016,
+        912
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 6️⃣YouTube Shorts",
+        "height": 240,
+        "color": 6
+      },
+      "id": "07aaff36-e0bb-418e-8d78-707800ca0817",
+      "name": "Sticky Note38",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1760,
+        912
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "name": "create_threads_posts_tool",
+        "description": "Use this tool to create Threads posts",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $workflow.id }}"
+        },
+        "fields": {
+          "values": [
+            {
+              "name": "route",
+              "stringValue": "=threads"
+            },
+            {
+              "name": "user_prompt",
+              "stringValue": "={{ $('When chat message received').item.json.chatInput }}"
+            }
+          ]
+        },
+        "jsonSchemaExample": ""
+      },
+      "id": "76a51388-fffa-4fc5-9ca6-5e96e12bbb31",
+      "name": "Short",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "position": [
+        -1936,
+        1008
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "name": "create_youtube_short_tool",
+        "description": "Use this tool to create a YouTube short",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $workflow.id }}"
+        },
+        "fields": {
+          "values": [
+            {
+              "name": "route",
+              "stringValue": "=youtube_short"
+            },
+            {
+              "name": "user_prompt",
+              "stringValue": "={{ $('When chat message received').item.json.chatInput }}"
+            },
+            {
+              "name": "llm",
+              "stringValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "jsonSchemaExample": ""
+      },
+      "id": "0796a6b6-f58f-44c5-9fe5-73318bb05e85",
+      "name": "YouTube Short",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "position": [
+        -1680,
+        1008
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "content": "## Social Media Agent Tools",
+        "height": 620,
+        "width": 1100,
+        "color": 7
+      },
+      "id": "a5f340d1-b4e8-4870-8b8e-edaca26b8f42",
+      "name": "Sticky Note18",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2320,
+        560
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# 🏭Social Media Content Factory",
+        "height": 820,
+        "width": 3520,
+        "color": 6
+      },
+      "id": "40c4e122-4193-4dc0-a82f-cbfa38d913e8",
+      "name": "Sticky Note25",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2480,
+        1344
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "url": "=https://image.pollinations.ai/prompt/{{ $json.output.common_schema.image_suggestion.replaceAll(' ','-').replaceAll(',','').replaceAll('.','').slice(0,100) }}",
+        "options": {}
+      },
+      "id": "a35ffd9a-22d2-4f8a-b599-319eb5b84080",
+      "name": "pollinations.ai1",
+      "type": "n8n-nodes-base.httpRequest",
+      "maxTries": 5,
+      "position": [
+        -544,
+        1728
+      ],
+      "retryOnFail": true,
+      "typeVersion": 4.2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Create Post Image\nhttps://pollinations.ai/\nhttps://image.pollinations.ai/prompt/[your image description]\n\n",
+        "height": 340,
+        "width": 300,
+        "color": 7
+      },
+      "id": "f95428e4-b20b-4d31-be28-f1fea36294b9",
+      "name": "Sticky Note26",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -640,
+        1568
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.imgbb.com/1/upload",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "expiration",
+              "value": "0"
+            },
+            {
+              "name": "key",
+              "value": "={{ $env.IMGBB_API_KEY}} "
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "image",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "613a3773-db9d-48a4-88f2-79145d836246",
+      "name": "Save Image to imgbb.com",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -224,
+        1600
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "content": "💡Notes\n\nUpdate all Social Media Platform Credentials as required.\n\nAdjust parameters and content for each platform to suit your needs.",
+        "height": 180,
+        "width": 340
+      },
+      "id": "cbf17e4b-4a32-4fc4-8a4f-94f5c017657a",
+      "name": "Sticky Note41",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# 👍 Approve Content Before Proceeding",
+        "height": 360,
+        "width": 400,
+        "color": 4
+      },
+      "id": "4652bf8e-4808-4ccf-ae5c-c62f3393d733",
+      "name": "Sticky Note42",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -736,
+        528
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "subject": "=Social Media Content - {{ $('Social Content').item.json.output.title }}",
+        "message": "={{ $json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "154a246f-8a3c-483c-93d6-f781509d5411",
+      "name": "Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        672,
+        1504
+      ],
+      "webhookId": "cfc2a53d-14a7-47e1-8385-c0b0792d9843",
+      "typeVersion": 2.1,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "=12345"
+      },
+      "id": "7c0b363d-b6cf-408f-a650-b46878706fb9",
+      "name": "Social Media Schema",
+      "type": "n8n-nodes-base.googleDocs",
+      "position": [
+        -2304,
+        1584
+      ],
+      "typeVersion": 2,
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "EQr5BLtOC0F7XbIQ",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "=12345"
+      },
+      "id": "a0efe43a-e1c5-4850-aa42-7c2b851576d2",
+      "name": "Social Media System Prompt",
+      "type": "n8n-nodes-base.googleDocs",
+      "position": [
+        -2304,
+        1872
+      ],
+      "typeVersion": 2,
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "EQr5BLtOC0F7XbIQ",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Prompt & Schema Composition from External Sources",
+        "height": 640,
+        "width": 1120,
+        "color": 7
+      },
+      "id": "8db470f2-16c1-452c-9b7e-269d012b4d87",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2416,
+        1440
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "responseFormat": "text"
+        }
+      },
+      "id": "c331bc36-50e3-4e69-bd0b-c4817927172b",
+      "name": "gpt-40-mini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        352,
+        1680
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "T8qjsL1HUzWlnlCj",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v20.0/[your-unique-id]/media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "image_url",
+              "value": "={{ $json.output.social_image.medium.url }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $json.output.caption }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a034f778-5f7d-4c94-88c6-c8af3c4e172a",
+      "name": "Instagram Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        464,
+        352
+      ],
+      "typeVersion": 4.2,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.data.social_content.schema.post }}",
+        "additionalFields": {}
+      },
+      "id": "c8ac76d9-ee89-46e2-99f1-287bf4eb2058",
+      "name": "X Post",
+      "type": "n8n-nodes-base.twitter",
+      "position": [
+        672,
+        112
+      ],
+      "typeVersion": 2,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v20.0",
+        "node": "[your-unique-id]",
+        "edge": "media_publish",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "creation_id",
+                "value": "={{ $json.id }}"
+              },
+              {
+                "name": "caption",
+                "value": "={{ $('Social Media Publishing Router').item.json.output.caption }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "bc29efeb-0501-4859-9ed4-3b695384d1d2",
+      "name": "Instragram Post",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "position": [
+        672,
+        288
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v20.0",
+        "node": "[your-unique-id]",
+        "edge": "photos",
+        "sendBinaryData": true,
+        "binaryPropertyName": "data",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "message",
+                "value": "={{ $json.output.post }}\n\n{{ $json.output.call_to_action }}\n"
+              }
+            ]
+          }
+        }
+      },
+      "id": "a50322d4-a12a-4801-8e91-8778f28e5696",
+      "name": "Facebook Post",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "position": [
+        672,
+        464
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "postAs": "organization",
+        "organization": "12345678",
+        "text": "={{ $json.data.social_content.schema.post }}\n{{ $json.data.social_content.schema.call_to_action }}\n{{ $json.data.social_content.common_schema.hashtags }}\n",
+        "shareMediaCategory": "IMAGE",
+        "binaryPropertyName": "=data",
+        "additionalFields": {}
+      },
+      "id": "6f7d0784-3aeb-40c6-99b5-8eeff4195888",
+      "name": "LinkedIn Post",
+      "type": "n8n-nodes-base.linkedIn",
+      "position": [
+        672,
+        640
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "subject": "=🔥FOR APPROVAL🔥 {{$('Extract as JSON').item.json.data.social_content.root_schema.name  }}",
+        "message": "={{ $json.output }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "resumeAmount": 45,
+              "resumeUnit": "minutes"
+            }
+          }
+        }
+      },
+      "id": "95066eee-1a93-4753-8062-b73d92bb5e20",
+      "name": "Gmail User for Approval",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        -608,
+        688
+      ],
+      "webhookId": "abfae12d-ddcf-4981-ad33-bb7a8cc115a2",
+      "typeVersion": 2.1,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Extract as JSON').item.json.data.social_image.medium.url }}",
+        "options": {}
+      },
+      "id": "da634a49-2b0e-4139-92a9-7615420b7cef",
+      "name": "Get Social Post Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -336,
+        944
+      ],
+      "retryOnFail": true,
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "responseFormat": "text"
+        }
+      },
+      "id": "648f08cd-5d4f-4641-8ea6-75fbaeb8b0ad",
+      "name": "gpt-40-mini1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -1120,
+        864
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "T8qjsL1HUzWlnlCj",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "id": "90336376-9cd2-43d0-a530-fd37b2185c55",
+      "name": "gpt-4o-mini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -1200,
+        1920
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "T8qjsL1HUzWlnlCj",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "<system>\nYou are a specialized content creation AI for social media platforms.\nYour primary function is generating platform-optimized social media content across various platforms including LinkedIn, Instagram, Facebook, Twitter (X), Threads, and YouTube Shorts. Each piece of content must:\nMatch the specific platform's audience expectations and algorithm preferences\nShowcase relevant expertise in your field\nDeliver actionable insights for your target audience\nDrive meaningful engagement through value-driven content\nOBJECTIVES:\nCreate platform-specific content following each platform's best practices\nImplement strategic hashtag usage combining general and trending tags\nDesign content that encourages user interaction and community building\nMaintain consistent brand voice while adapting to platform requirements\nIncorporate data-driven insights to maximize content performance\nOUTPUT REQUIREMENTS:\nDeliver content in valid JSON format according to the platform-specific schema\nInclude all required fields as specified in the schema\nOmit any explanatory text or code fencing in your response\nTailor content specifically to the platform indicated in the user's request\nFor each content request, adapt your output based on the platform guidelines.  Never provide URLS for video or image suggestions and only describe the suggestion.\n</system>\n\n\n<rules>\nOnly provide final response in valid JSON for the appropriate social platform\nNever include any preamble or further explanation\nAlways remove any ``` ```json\n</rules>\n\n\n<linkedin>\n**Style**: Professional and insightful.\n**Tone**: Business-oriented; focus on automation use cases, industry insights, and community impact.\n**Content Length**: 3-4 sentences; concise but detailed.\n**Hashtags**: #Innovation #Automation #WorkflowSolutions #DigitalTransformation #Leadership\n**Call to Action (CTA)**: Encourage comments or visits to workflows.diy's website for more insights.\n</linkedin>\n\n<instagram>\n**Style**: Visual storytelling with creative captions.\n**Tone**: Inspirational and engaging; use emojis for relatability.\n**Content Length**: 2-3 sentences paired with eye-catching visuals (e.g., infographics or workflow demos).\n**Visuals**: Showcase milestones (e.g., new workflow launches), tutorials, or product highlights.\n**CTA**: Use phrases like \"Swipe to learn more,\" \"Tag your team,\" or \"Check out the link below!\"\n**Link Placement**: Add the provided link before hashtags; if no link is provided, use \"Visit our website: https://example.com\"\n**Hashtags**: #AutomationLife #TechInnovation #WorkflowTips #Programming #Engineering\n</instagram>\n\n<facebook>\n**Style**: Friendly and community-focused.\n**Tone**: Relatable; highlight user success stories or company achievements in automation.\n**Content Length**: 2-3 sentences; conversational yet professional.\n**Hashtags**: #SmallBusinessAutomation #Entrepreneurship #Leadership #WorkflowInnovation\n**CTA**: Encourage likes, shares, comments (e.g., \"What's your favorite automation tip?\").\n</facebook>\n\n<xtwitter>\n**Style**: Concise and impactful.\n**Tone**: Crisp and engaging; spark curiosity in 150 characters or less.\n**Hashtags**: #WorkflowTrends #AIWorkflows #AutomationTips #NoCodeSolutions\n**CTA**: Drive quick engagement through retweets or replies (e.g., \"What's your go-to n8n workflow?\").\n</xtwitter>\n\n<threads>\n**Style**: Conversational and community-driven posts.\n**Tone**: Casual yet informative; encourage discussions around automation trends or innovations.\n**Content Length**: 1-2 short paragraphs with a question or thought-provoking statement at the end.\n**Hashtags**: Similar to Instagram but tailored for trending Threads topics related to automation.\n</threads>\n\n<youtube_short>\n**Style**: Short-form video content showcasing quick workflow tutorials or use cases.\n**Tone**: Authoritative yet approachable; establish workflows.diy as a leader in n8n automation solutions.\n**Content Length**:\n  Tutorials/Reviews (long-form): 5-10 minutes\n  Shorts/Highlights (short-form): Under 1 minute\n**CTA**: Encourage subscriptions, likes, comments (e.g., \"Subscribe for more workflow tips!\").\n</youtube_short>\n\n\n\n\n",
+        "height": 1540,
+        "width": 760,
+        "color": 5
+      },
+      "id": "0c55fd8c-5637-4162-9aba-187a16777b0a",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3824,
+        1072
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "<common>\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"hashtags\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"string\"\n            }\n        },\n        \"image_suggestion\": {\n            \"type\": \"string\"\n        }\n    }\n}\n</common>\n\n<root>\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"name\": {\n            \"type\": \"string\"\n        },\n        \"description\": {\n            \"type\": \"string\"\n        },\n        \"additional_notes\": {\n            \"type\": \"string\"\n        }\n    }\n}\n</root>\n\n<linkedin>\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"post\": {\n            \"type\": \"string\"\n        },\n        \"call_to_action\": {\n            \"type\": \"string\"\n        }\n    }\n}\n</linkedin>\n\n<instagram>\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"caption\": {\n            \"type\": \"string\"\n        },\n        \"emojis\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"string\"\n            }\n        },\n        \"call_to_action\": {\n            \"type\": \"string\"\n        }\n    }\n}\n</instagram>\n\n<facebook>\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"post\": {\n            \"type\": \"string\"\n        },\n        \"call_to_action\": {\n            \"type\": \"string\"\n        }\n    }\n}\n</facebook>\n\n<xtwitter>\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"video_suggestion\": {\n            \"type\": \"string\"\n        },\n        \"post\": {\n            \"type\": \"string\"\n        },\n        \"character_limit\": {\n            \"type\": \"integer\"\n        }\n    }\n}\n</xtwitter>\n\n<threads>\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"text_post\": {\n            \"type\": \"string\"\n        },\n        \"call_to_action\": {\n            \"type\": \"string\"\n        }\n    }\n}\n</threads>\n\n<youtube_short>\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"video_suggestion\": {\n            \"type\": \"string\"\n        },\n        \"title\": {\n            \"type\": \"string\"\n        },\n        \"description\": {\n            \"type\": \"string\"\n        },\n        \"call_to_action\": {\n            \"type\": \"string\"\n        }\n    }\n}\n</youtube_short>\n\n\n\n",
+        "height": 1540,
+        "color": 3
+      },
+      "id": "a6af6f37-a3d1-4f7d-b358-da433e6ee56f",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3040,
+        1072
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### 👈System Prompt",
+        "height": 240,
+        "width": 260,
+        "color": 5
+      },
+      "id": "bbc2b332-2c55-4600-a975-c1dd98490463",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2384,
+        1808
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### 👈Social Media Schema",
+        "height": 240,
+        "width": 260,
+        "color": 3
+      },
+      "id": "38551b37-ceef-42fb-9842-ef3d771d3372",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2384,
+        1520
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9d6d41f2-7216-4659-af34-7215298494d9",
+              "name": "schema",
+              "type": "string",
+              "value": "={{ $json.content }}"
+            },
+            {
+              "id": "7d8c85f5-3f4a-4d72-bef0-0957c6ce82a4",
+              "name": "platform",
+              "type": "string",
+              "value": "={{ $('When Executed by Another Workflow').item.json.route }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3309b81d-ce53-4cec-910b-13c42db29733",
+      "name": "Schema",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -2048,
+        1584
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5f789b37-b021-4cd4-b359-fdfbb9b71c2b",
+              "name": "system_prompt_doc_id",
+              "type": "string",
+              "value": "={{ $json.documentId }}"
+            },
+            {
+              "id": "daac5758-38ad-4afe-966b-a9b4b89691b2",
+              "name": "system_prompt",
+              "type": "string",
+              "value": "={{ $json.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "200d912c-31c3-42a6-8a5d-7f2911385d9d",
+      "name": "System Prompt",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -2048,
+        1872
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the input data from previous node\nconst inputData = $input.first().json;\nconst xmlString = inputData.schema;\n\nconsole.log(inputData)\n\n// Function to extract content between XML tags with better regex handling\nfunction extractFromXmlTags(xmlString, tagName) {\n  const regex = new RegExp(`<${tagName}>(.*?)<\\/${tagName}>`, 'gs');\n  const match = regex.exec(xmlString);\n  return match ? match[1].trim() : null;\n}\n\n// Get the platform from the input or use a default\nconst platform = inputData.platform;\n\n// Extract the content from the specified tag\nconst extractedContent = extractFromXmlTags(xmlString, platform);\nconst rootContent = extractFromXmlTags(xmlString, 'root');\nconst commonContent = extractFromXmlTags(xmlString, 'common');\n\njsonData = JSON.parse(extractedContent);\nrootSchema = JSON.parse(rootContent);\ncommonSchema = JSON.parse(commonContent);\n\n// Return the result\nreturn {\n  json: {\n    schema: jsonData,\n    root_schema: rootSchema,\n    common_schema: commonSchema\n  }\n};\n"
+      },
+      "id": "f4b0122f-3261-4c23-897e-f5dab6075e91",
+      "name": "Parse Schema",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1840,
+        1584
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the input data from previous node\nconst inputData = $input.first().json;\nconst xmlString = inputData.system_prompt;\n\n// Function to extract all content between XML tags\nfunction extractAllXmlTags(xmlString) {\n  // Create a result object to store tag contents\n  const result = {};\n  \n  // Regular expression to find all XML tags and their content\n  // This regex matches opening tag, content, and closing tag\n  const tagRegex = /<([^>\\/]+)>([\\s\\S]*?)<\\/\\1>/g;\n  \n  // Find all matches\n  let match;\n  while ((match = tagRegex.exec(xmlString)) !== null) {\n    const tagName = match[1].trim();\n    const content = match[2].trim();\n    \n    // Store the content with the tag name as the key\n    result[tagName] = content;\n  }\n  \n  return result;\n}\n\n// Extract all XML tags and their content\nconst extractedTags = extractAllXmlTags(xmlString);\n\n// Return the result as a JSON object\nreturn {\n  json: {\n    system_config: extractedTags\n  }\n};\n"
+      },
+      "id": "dc91b010-e4a1-4714-ad93-28a61d6c7912",
+      "name": "Parse System Prompt",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1840,
+        1872
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9216ad1c-a281-4c94-835d-e20507ef0cb5",
+              "name": "route",
+              "type": "string",
+              "value": "={{ $json.route }}"
+            },
+            {
+              "id": "e6ca5cdf-5139-4db7-b065-ee52028216c5",
+              "name": "user_prompt",
+              "type": "string",
+              "value": "={{ $json.user_prompt }}"
+            },
+            {
+              "id": "2927cd6f-c351-49df-954b-9f87b0338c58",
+              "name": "system_config.system",
+              "type": "string",
+              "value": "={{ $json.system_config.system }}"
+            },
+            {
+              "id": "829b1519-9ffa-44d7-8caa-455e15b30614",
+              "name": "system_config.rules",
+              "type": "string",
+              "value": "={{ $json.system_config.rules }}"
+            },
+            {
+              "id": "b44472ba-6e98-448b-bad6-e02da8b32b0a",
+              "name": "={{ $json.route }}",
+              "type": "string",
+              "value": "={{ $json.system_config[$json.route.toLowerCase()] }}"
+            },
+            {
+              "id": "a96e8c30-1d44-4e23-9ef4-95d7303ea41e",
+              "name": "root_schema",
+              "type": "object",
+              "value": "={{ $json.root_schema }}"
+            },
+            {
+              "id": "6cb68192-10f3-496d-88ca-289ee0c19940",
+              "name": "common_schema",
+              "type": "object",
+              "value": "={{ $json.common_schema }}"
+            },
+            {
+              "id": "8f9b85f0-abaa-46c2-ba98-897f6a677105",
+              "name": "schema",
+              "type": "object",
+              "value": "={{ $json.schema }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9e1ed737-f075-4657-b4b1-2c4c23547f5a",
+      "name": "Compose Prompt & Schema",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -1456,
+        1728
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Social Media Platform: {{ $json.route }}\nUser Prompt: {{ $json.user_prompt }}\n",
+        "options": {
+          "systemMessage": "={{ $json.system_config.system }}\n\n<tools>\nYou have been provided with an internet search tool.  Use this tool to find relavent information about the users request before responding.  Todays date is: {{ $now }}\n</tools>\n\n<rules>\n{{ $json.system_config.rules }}\n- Output must conform to provided JSON schema\n</rules>\n\nFollow this Output JSON Schema:\n{\n  root_schema: {{ $json.root_schema.toJsonString() }},\n  common_schema: {{ $json.common_schema.toJsonString()}},\n  schema: {{  $json.schema.toJsonString() }}\n}"
+        }
+      },
+      "id": "908626e9-8dbc-4954-83ef-8f923a15ee6d",
+      "name": "Social Media Content Creator",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -1184,
+        1728
+      ],
+      "typeVersion": 1.7
+    },
+    {
+      "parameters": {
+        "content": "# External System Prompt and Schema",
+        "height": 1760,
+        "width": 1100,
+        "color": 7
+      },
+      "id": "fe248d7b-94cf-4c69-9da0-a695ef71bd4b",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3856,
+        880
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# 📄 Publish to Social Media ",
+        "height": 1240,
+        "width": 700,
+        "color": 6
+      },
+      "id": "5b9b8999-cdab-4b8f-8514-2ca159b7c6e1",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        400,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "id": "4390537c-cb76-4be9-a39d-bdc3788bbd30",
+      "name": "Merge Prompts and Schema",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        -1648,
+        1728
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "content": "## Social Media Content Creator",
+        "height": 480,
+        "width": 400
+      },
+      "id": "843527c7-7a28-461e-9c2b-11ffa6caf062",
+      "name": "Sticky Note7",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1264,
+        1600
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8c318996-aa79-4970-b8d7-33ae1931c8c6",
+              "name": "output",
+              "type": "object",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "43ec78d3-02ce-45cf-ae30-65b5f0bd48f2",
+      "name": "Social Content",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -800,
+        1728
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.output.root_schema.name.replaceAll(' ','-').replaceAll(',','').replaceAll('.','') }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "=My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "=12345"
+        },
+        "options": {}
+      },
+      "id": "e68ee6b8-3998-4a5c-bddd-19cd3754d8d4",
+      "name": "Save Image to Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        -224,
+        1808
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "p1fDf8FcH7OLdIbI",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "id": "723febdb-c658-4ec2-b2d5-ce3db8575851",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        0,
+        1728
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "content": "## Send Social Media Image and Post Contents to Gmail\n(optional)",
+        "height": 420,
+        "width": 660,
+        "color": 7
+      },
+      "id": "13c80f80-42b2-4f33-9dff-6e1286183825",
+      "name": "Sticky Note8",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        224,
+        1408
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Prepare Social Media Post and Save to Google Drive",
+        "height": 260,
+        "width": 840,
+        "color": 7
+      },
+      "id": "a8fc2aef-e0f8-472d-b07b-9a306ed1e800",
+      "name": "Sticky Note9",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        1872
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "createFromText",
+        "content": "={{ $json.response.toJsonString() }}",
+        "name": "={{ $json.response.google_drive_image.id }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "= 12345"
+        },
+        "options": {}
+      },
+      "id": "3a36f6cd-df40-4ca8-a076-44ccd9a042b6",
+      "name": "Save Social Post to Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        592,
+        1952
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "p1fDf8FcH7OLdIbI",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "769d86e6-3764-4023-8932-f25f7d4fe34a",
+              "name": "id",
+              "type": "string",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "id": "4ccae0cc-d246-477c-9e94-3be461134d01",
+              "name": "webContentLink",
+              "type": "string",
+              "value": "={{ $json.webContentLink }}"
+            },
+            {
+              "id": "74e22694-c7e6-4598-8e87-8ea6ae00144e",
+              "name": "webViewLink",
+              "type": "string",
+              "value": "={{ $json.webViewLink }}"
+            },
+            {
+              "id": "e8eedbbf-7d42-475b-a748-0afbe8b730da",
+              "name": "thumbnailLink",
+              "type": "string",
+              "value": "={{ $json.thumbnailLink }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "663ce618-50a9-49e0-9267-0d8e832d48ea",
+      "name": "Google Drive Image Meta",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        224,
+        1952
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b705af39-d286-4461-956c-d963ea151734",
+              "name": "response",
+              "type": "object",
+              "value": "={ \n  \"route\": \"{{ $('When Executed by Another Workflow').item.json.route }}\",\n \"social_image\": {{ $('Merge').item.json.data.toJsonString()  }},\n  \"social_content\": {{ $('Social Content').item.json.output.toJsonString() }},\n  \"google_drive_image\": {{ $json.toJsonString() }}\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2776fa27-37ad-42eb-a315-c2fe5c7b1f3a",
+      "name": "Social Post JSON",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        400,
+        1952
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ad353ca7-059a-4108-88b9-fb92720a34fe",
+              "name": "response",
+              "type": "string",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8737c051-d37b-455f-ab0d-6fd659f5eb3b",
+      "name": "Respond with Google Drive Id",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        768,
+        1952
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "Image created successfully",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "0a4bddf4-8d00-45d3-9f81-77edae2c5896",
+      "name": "Telegram Success Message (Optional)",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        -224,
+        1408
+      ],
+      "webhookId": "93342863-02c0-42ee-98c3-a2ec72b3bf12",
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "Error creating image (Debugging)",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "1af658b5-b019-425e-bcca-4488961d03a7",
+      "name": "Telegram Error Message (Optional)",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        -224,
+        1984
+      ],
+      "webhookId": "93342863-02c0-42ee-98c3-a2ec72b3bf12",
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.data.route }}",
+                    "rightValue": "xtwitter"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "1️⃣X-Twitter"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "86d44336-bab7-422f-9266-fcb513252d19",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.data.route }}",
+                    "rightValue": "instagram"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": " 2️⃣Instagram"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "29f37628-6381-46af-babb-74bf00b4a849",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.data.route }}",
+                    "rightValue": "facebook"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": " 3️⃣Facebook"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "fdb7c8aa-4108-43f6-8f6b-71cd8f383d2a",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.data.route }}",
+                    "rightValue": "=linkedin"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "4️⃣Linkedin"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "956baedd-4a0b-4e41-b85c-ef2c84332bdc",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.data.route }}",
+                    "rightValue": "threads"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "5️⃣Threads"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "4d690442-197c-4ff9-b176-b55dfabaecc9",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.data.route }}",
+                    "rightValue": "youtube_short"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "6️⃣YouTube Short"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7b2d5f8b-f966-4e7c-937b-f6d4ed3b1954",
+      "name": "Social Media Publishing Router",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        112,
+        384
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Use the HTML template and populate [fields] as required from this: {{ $json.data.social_content.toJsonString() }}\n-----\nOnly output HTML without code block tags, preamble or further explanation in the format provided.\n\n## HTML Template\n<table style=\"max-width:640px;min-width:320px;width:100%;border-collapse:collapse;font-family:Arial,sans-serif;margin:20px auto\">\n    <tbody>\n        <tr>\n            <td colspan=\"2\" style=\"background-color:#ffffff;padding:15px;text-align:left\">\n                <img src=\"{{ $json.data.google_drive_image.thumbnailLink }}\" alt=\"{{ $json.data.social_content.root_schema.name }}\" style=\"max-width:100%;height:auto;\">\n            </td>\n        </tr>\n        <tr>\n            <td colspan=\"2\" style=\"background-color:#efefef;padding:15px;font-size:20px;text-align:left;font-weight:bold\">\n                {{ $json.data.social_content.root_schema.name }}\n            </td>\n        </tr>\n        <tr>\n            <td style=\"background-color:#f9f9f9;padding:15px;width:30%;text-align:left\"><strong>[label_1]:</strong></td>\n            <td style=\"background-color:#f9f9f9;padding:15px;text-align:left\">[content_1]</td>\n        </tr>\n        <tr>\n            <td style=\"background-color:#f1f1f1;padding:15px;text-align:left\"><strong>[label_2]:</strong></td>\n            <td style=\"background-color:#f1f1f1;padding:15px;text-align:left\">[content_2]</td>\n        </tr>\n\n        [continue the pattern ...]\n\n        <tr>\n            <td colspan=\"2\" style=\"background-color:#efefef;padding:15px;text-align:left\">\n                <strong>[footer_label]:</strong> [footer_content]\n            </td>\n        </tr>\n    </tbody>\n</table>\n\n",
+        "options": {}
+      },
+      "id": "deaf4492-dab9-4b55-9ae2-e1095cc7dbc7",
+      "name": "Prepare Email Contents",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -1104,
+        688
+      ],
+      "typeVersion": 1.7
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "313cec9b-aad5-4f9c-a209-afe83af53df0",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "12099ed5-0733-4287-9ce4-abae0bc6e63a",
+      "name": "Is Approved?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -608,
+        944
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "efb1c03b-8465-443d-a442-b76b8cd86a73",
+              "name": "output",
+              "type": "object",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3b43f770-85b6-4f5e-bc69-972bae6d40e9",
+      "name": "File Id",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -784,
+        208
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.output.response }}"
+        },
+        "options": {}
+      },
+      "id": "00b68f59-3cbb-4d10-a6af-f3b3d13c40ac",
+      "name": "Get Social Post from Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        -608,
+        208
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "p1fDf8FcH7OLdIbI",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "options": {}
+      },
+      "id": "83f5c2d3-cf08-4f25-8779-7f525e484c7a",
+      "name": "Extract as JSON",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        -416,
+        208
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "debda0e7-d37a-410a-ba7a-62ed8e4aab16",
+      "name": "Merge Image and Post Contents",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        -160,
+        448
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 380,
+        "width": 320
+      },
+      "id": "4baac1a7-a78d-459c-a0d8-81422f148692",
+      "name": "Sticky Note10",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        560,
+        832
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "c1eba6a4-60ab-47b9-bd19-ecb96502ccf1",
+      "name": "Implement Threads Here",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        672,
+        864
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "5c21feb9-9ca8-4b42-aab6-ca04ac48fca5",
+      "name": "Implement YouTube Shorts Here",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        672,
+        1024
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4015bb20-da3b-4781-ab8c-46f4d826138e",
+              "name": "output",
+              "type": "string",
+              "value": "={{ $('Social Media Publishing Router').item.json.data.route }}\n\n{{ $('Social Media Publishing Router').item.json.data.social_content.root_schema.name }}\n\n{{ $('Social Media Publishing Router').item.json.data.social_content.schema.post }}\n\n![{{ $('Social Media Publishing Router').item.json.data.social_content.root_schema.name }}]({{ $('Social Media Publishing Router').item.json.data.social_image.thumb.url }})"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5f19a6f5-fb47-477a-8852-27435b715767",
+      "name": "X Response",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        864,
+        112
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "da8fe7e3-e74d-46b6-91eb-1bf4432b73b0",
+              "name": "output",
+              "type": "string",
+              "value": "={{ $('Social Media Publishing Router').item.json.data.route }}  \n{{ $('Social Media Publishing Router').item.json.data.social_content.root_schema.name }}\n{{ $('Social Media Publishing Router').item.json.data.social_content.schema.caption }}\n![{{ $('Social Media Publishing Router').item.json.data.social_content.root_schema.name }}]({{ $('Social Media Publishing Router').item.json.data.social_image.thumb.url }})"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7f73c530-6f30-4acb-b1ea-ef3019f3a485",
+      "name": "Instagram Response",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        864,
+        288
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e349e314-2967-456f-856a-85727bdf94f3",
+              "name": "output",
+              "type": "string",
+              "value": "={{ $('Social Media Publishing Router').item.json.data.route }}\n\n{{ $('Social Media Publishing Router').item.json.data.social_content.root_schema.name }}\n\n{{ $('Social Media Publishing Router').item.json.data.social_content.schema.post }}\n\n![{{ $('Social Media Publishing Router').item.json.data.social_content.root_schema.name }}]({{ $('Social Media Publishing Router').item.json.data.social_image.thumb.url }})"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f25560f9-7ec5-43b8-a8ec-0eb19ad08937",
+      "name": "Facebook Response",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        864,
+        464
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "88404fde-a41b-4da5-bbdb-0e41b879a52c",
+              "name": "output",
+              "type": "string",
+              "value": "={{ $('Social Media Publishing Router').item.json.data.route }}\n\n{{ $('Social Media Publishing Router').item.json.data.social_content.root_schema.name }}\n\n{{ $('Social Media Publishing Router').item.json.data.social_content.schema.post }}\n\n![{{ $('Social Media Publishing Router').item.json.data.social_content.root_schema.name }}]({{ $('Social Media Publishing Router').item.json.data.social_image.thumb.url }})\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f6ad647e-184e-47b7-834e-ab3051f973cb",
+      "name": "LinkedIn Response",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        864,
+        640
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "content": "## Social Media Schema",
+        "height": 80,
+        "color": 3
+      },
+      "id": "d8250a3f-9da2-4e37-b7ef-67ceeebf7776",
+      "name": "Sticky Note11",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3040,
+        992
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## System Prompt",
+        "height": 80,
+        "width": 760,
+        "color": 5
+      },
+      "id": "26360e61-e49c-4eb6-b81a-0e8699bb16c1",
+      "name": "Sticky Note12",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3824,
+        992
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# Social Media Router Agent",
+        "height": 320,
+        "width": 620
+      },
+      "id": "c3d9eac6-4c5d-4bf2-b0ad-9e31a18343b3",
+      "name": "Sticky Note13",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2096,
+        80
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a helpful assistant that uses the provided tools.  Respond with a valid JSON object.\n\nUser prompt:  {{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "## RULES\n- You do not answer the users questions directly and your sole purpose is to call the appropriate tool to and provide the verbatim response.\n\n## TOOLS\n- create_x_twitter_posts_tool: Use this tool to create X-Twitter posts\n- create_instagram_posts_tool: Use this tool to create Instagram posts\n- create_facebook_posts_tool: Use this tool to create Facebook posts\n- create_linkedin_posts_tool: Use this tool to create LinkedIn posts\n- create_threads_posts_tool: Use this tool to create Threads posts\n- create_youtube_short_tool: Use this tool to create a YouTube short\n\n\n"
+        }
+      },
+      "id": "37dcb9c8-c3ba-48c2-bbbb-006a520d2773",
+      "name": "🤖Social Media Router Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -1920,
+        208
+      ],
+      "typeVersion": 1.7
+    },
+    {
+      "parameters": {
+        "content": "## Prepare Email Approval Contents as HTML",
+        "height": 440,
+        "width": 400
+      },
+      "id": "561f700b-f631-463f-ba3a-18cf75dc81a9",
+      "name": "Sticky Note14",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1184,
+        560
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "43044f8a-fd99-4a05-95d9-d92fe14dbc9c",
+      "name": "SerpAPI",
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "position": [
+        -1008,
+        1920
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "serpApi": {
+          "id": "QuBz5fPqK2YyW5Fi",
+          "name": "SerpAPI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# 💫Features & Benefits",
+        "height": 680,
+        "width": 3520,
+        "color": 7
+      },
+      "id": "b8254315-f82e-43f1-88f9-74bb67506fbd",
+      "name": "Sticky Note15",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2480,
+        2160
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 1️⃣System Prompt Composition from External Source\nCentralized prompt management: Store and update system prompts in Google Docs for easy team collaboration\n\n- Consistent brand voice: Ensure all generated content maintains consistent tone and style across platforms\n\n- Flexible customization: Quickly modify prompts without changing workflow code\n\n- Version control: Track changes to prompts over time with Google Docs revision history\n\n- Role-specific access: Control who can edit core prompts while allowing broader viewing access\n",
+        "height": 280,
+        "width": 680,
+        "color": 7
+      },
+      "id": "6c5bd8da-f7c6-45aa-95c3-36806300b7b5",
+      "name": "Sticky Note16",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2416,
+        2240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 2️⃣Output Schema Composition from External Source\n- Structured content generation: Enforce consistent JSON output formats for each platform\n\n- Platform-specific optimization: Tailor content structure to each social network's requirements\n\n- Reduced errors: Validate content against schemas before publishing\n\n- Easy updates: Modify schemas as platform requirements change without workflow modifications\n\n- Standardized metadata: Ensure all required fields are included for each platform",
+        "height": 260,
+        "width": 680,
+        "color": 7
+      },
+      "id": "10fef8d0-5536-459f-a926-3f7cb231125c",
+      "name": "Sticky Note17",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2416,
+        2544
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 4️⃣ Dynamic Social Media Content Creator Agent with Web Search Tool to Match Social Post and Platform Schema\n\n- Real-time research: Incorporate current events and trending topics into content\n\n- Fact-checking: Verify information before publishing to maintain credibility\n\n- Competitive analysis: Reference industry trends and competitor content\n\n- Contextual relevance: Create content that responds to current market conditions\n\n- Enhanced engagement: Generate content that aligns with trending conversations",
+        "height": 520,
+        "width": 400,
+        "color": 7
+      },
+      "id": "732679b7-befa-4351-983c-30cbae00c45f",
+      "name": "Sticky Note19",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1264,
+        2240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 5️⃣ Dynamic Image Creation to Match Social Post & Platform Schema\n\n- Visual consistency: Generate platform-optimized images that match content themes\n\n- Automated alt text: Create accessibility-compliant image descriptions\n\n- Multi-format output: Generate images in various dimensions for different platforms\n\n- Brand compliance: Ensure all visuals align with brand guidelines\n\n- Reduced design bottlenecks: Eliminate waiting for custom graphics for each post",
+        "height": 520,
+        "width": 340,
+        "color": 7
+      },
+      "id": "efe6683b-044f-4f09-9a6f-c732bb037afb",
+      "name": "Sticky Note23",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -816,
+        2240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 6️⃣ Image Archiving to Multiple Cloud Services for Future Use\n\n- Redundant storage: Prevent content loss with multi-location backups\n\n-Searchable repository: Build a library of past content for reference and reuse\n\n- Asset tracking: Maintain records of which images were used for which campaigns\n\n- Compliance documentation: Keep records of published content for regulatory purposes\n\n- Resource optimization: Reuse successful visual assets for future campaigns",
+        "height": 520,
+        "width": 300,
+        "color": 7
+      },
+      "id": "2fd5c418-9d89-465e-a52c-b57bf80dcde0",
+      "name": "Sticky Note24",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -464,
+        2240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 7️⃣ Telegram Messaging for Workflow Status \n\n- Real-time notifications: Get immediate alerts about workflow execution\n\n- Error tracking: Quickly identify and address failures in the content pipeline\n\n- Team coordination: Keep stakeholders informed of content progress\n\n- Audit trail: Maintain records of when content was created and published\n\n- Remote monitoring: Track workflow execution from mobile devices",
+        "height": 520,
+        "width": 260,
+        "color": 7
+      },
+      "id": "9746ec40-ff95-4b99-a1e6-7abe6e974abf",
+      "name": "Sticky Note27",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -144,
+        2240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 8️⃣ Optional Workflow Reporting to Gmail in with Structured HTML Content\n- Executive summaries: Provide management with clean, formatted reports\n\n- Content approval: Enable stakeholders to review content before publishing\n\n- Performance tracking: Document content metrics in standardized formats\n\n- Schedule adherence: Monitor if content is being published according to plan\n\n- Resource allocation: Track time and effort spent on different content types",
+        "height": 280,
+        "width": 840,
+        "color": 7
+      },
+      "id": "828adfb5-3db6-4056-86aa-6de729514510",
+      "name": "Sticky Note28",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        2240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 9️⃣ Social Post Archiving to Google Drive for Future Use\n- Content library: Build a searchable repository of all published content\n\n- Performance correlation: Connect content with its performance metrics\n\n- Compliance records: Maintain documentation of published materials\n\n- Content repurposing: Easily find and adapt past successful content\n\n- Campaign documentation: Group related content for campaign analysis",
+        "height": 260,
+        "width": 840,
+        "color": 7
+      },
+      "id": "cabb45f3-6289-40cf-bfe9-6fe397ae1393",
+      "name": "Sticky Note29",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        2544
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 3️⃣Dynamic System Prompt and Platform Schema Composition based on User Prompt using External Sources\n- Centralized prompt management: Store all system prompts in a single external source for easier maintenance and updates\n\n- Platform-specific optimization: Automatically tailor content to each platform's unique requirements and audience expectations\n\n- Consistent brand voice: Ensure all generated content maintains your brand's tone and messaging guidelines across platforms\n\n- Reduced technical debt: Modify prompts and schemas without changing workflow code or redeploying applications\n\n- Collaborative improvement: Enable marketing teams to refine prompts without developer intervention\n\n- Version control: Track changes to prompts and schemas over time with document revision history\n\n- A/B testing capability: Easily test different prompt variations to optimize content performance\n\n- Scalable content strategy: Add support for new platforms by simply creating new prompt and schema documents\n\n- Dynamic adaptation: Respond to platform algorithm changes by quickly updating external prompt documents\n\n- Knowledge preservation: Maintain institutional knowledge about effective platform-specific content strategies\n\n- Reduced onboarding time: New team members can understand content requirements by reviewing documented prompts\n\n- Compliance management: Ensure all generated content follows legal and brand guidelines by centralizing rules",
+        "height": 960,
+        "width": 420
+      },
+      "id": "357d42bc-e4fd-4c2a-b438-b305273d248b",
+      "name": "Sticky Note30",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1728,
+        2240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Use the HTML template and populate [fields] as required from this: {{ $('pollinations.ai1').item.json.output.toJsonString() }}\n-----\nOnly output HTML without code block tags, preamble or further explanation in the format provided.\n\n## HTML Template\n<table style=\"max-width:640px;min-width:320px;width:100%;border-collapse:collapse;font-family:Arial,sans-serif;margin:20px auto\">\n    <tbody>\n        <tr>\n            <td colspan=\"2\" style=\"background-color:#ffffff;padding:15px;text-align:left\">\n                <img src=\"{{ $json.thumbnailLink }}\" alt=\"{{ $json.output.root_schema.name }}\" style=\"max-width:100%;height:auto;\">\n            </td>\n        </tr>\n        <tr>\n            <td colspan=\"2\" style=\"background-color:#efefef;padding:15px;font-size:20px;text-align:left;font-weight:bold\">\n                {{ $json.output.root_schema.name  }}\n            </td>\n        </tr>\n        <tr>\n            <td style=\"background-color:#f9f9f9;padding:15px;width:30%;text-align:left\"><strong>Platform:</strong></td>\n            <td style=\"background-color:#f9f9f9;padding:15px;text-align:left\">{{ $('Compose Prompt & Schema').item.json.route }}</td>\n        </tr>\n        <tr>\n            <td style=\"background-color:#f9f9f9;padding:15px;width:30%;text-align:left\"><strong>[label_1]:</strong></td>\n            <td style=\"background-color:#f9f9f9;padding:15px;text-align:left\">[content_1]</td>\n        </tr>\n        <tr>\n            <td style=\"background-color:#f1f1f1;padding:15px;text-align:left\"><strong>[label_2]:</strong></td>\n            <td style=\"background-color:#f1f1f1;padding:15px;text-align:left\">[content_2]</td>\n        </tr>\n\n        [continue the pattern ...]\n\n        <tr>\n            <td colspan=\"2\" style=\"background-color:#efefef;padding:15px;text-align:left\">\n                <strong>[footer_label]:</strong> [footer_content]\n            </td>\n        </tr>\n    </tbody>\n</table>\n\n",
+        "options": {}
+      },
+      "id": "92c5b35c-e05c-4cb2-bf17-6d600d01562d",
+      "name": "Prepare Social Media Email Contents",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        320,
+        1504
+      ],
+      "typeVersion": 1.7
+    },
+    {
+      "parameters": {
+        "content": "💡Notes\n\n- Create Google Doc for the Social Media Schema and copy the provided schema.\n\n- Update the Google Doc ID in the Social Media Schema node.\n\n- Create Google Doc for the Social Media System Prompt and copy the provided System Prompt.\n\n- Update the Google Doc ID in the Social Media System Prompt node.\n\n\n\nAdjust system prompt and platform specific prompts to suit your needs.",
+        "height": 500
+      },
+      "id": "13c7a3ce-04ec-4e03-848e-57500955bb04",
+      "name": "Sticky Note43",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2736,
+        1952
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "💡Notes\n\nReplace pollinations.ai with any online image generation service that produces an image file you can download.",
+        "width": 300
+      },
+      "id": "33946e04-a6e3-4d94-86d5-64e30de5f424",
+      "name": "Sticky Note44",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -640,
+        1920
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "💡Notes\n\nReplace Chat model with other LLMs and test out the results.  Add more tools or try other web search tools to suit your use case.",
+        "height": 140,
+        "width": 400
+      },
+      "id": "1f628a0f-4260-4b41-ad3e-4210ee87e530",
+      "name": "Sticky Note45",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1264,
+        1440
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "id": "5adc203d-62ab-4d60-a535-b78d69d79558",
+      "name": "gpt-4o",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -2496,
+        672
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "T8qjsL1HUzWlnlCj",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -2496,
+        672
+      ],
+      "id": "95ee1699-ee8d-4af0-b89e-6a329dce8bfe",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "s093sexVW7lbdOBr",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Social Media Schema": [
+      {
+        "json": {
+          "content": "<common>\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"hashtags\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"string\"\n            }\n        },\n        \"image_suggestion\": {\n            \"type\": \"string\"\n        }\n    }\n}\n</common>\n\n<root>\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"name\": {\n            \"type\": \"string\"\n        },\n        \"description\": {\n            \"type\": \"string\"\n        },\n        \"additional_notes\": {\n            \"type\": \"string\"\n        }\n    }\n}\n</root>\n\n<linkedin>\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"post\": {\n            \"type\": \"string\"\n        },\n        \"call_to_action\": {\n            \"type\": \"string\"\n        }\n    }\n}\n</linkedin>\n\n<instagram>\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"caption\": {\n            \"type\": \"string\"\n        },\n        \"emojis\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"string\"\n            }\n        },\n        \"call_to_action\": {\n            \"type\": \"string\"\n        }\n    }\n}\n</instagram>\n\n<facebook>\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"post\": {\n            \"type\": \"string\"\n        },\n        \"call_to_action\": {\n            \"type\": \"string\"\n        }\n    }\n}\n</facebook>\n\n<xtwitter>\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"video_suggestion\": {\n            \"type\": \"string\"\n        },\n        \"post\": {\n            \"type\": \"string\"\n        },\n        \"character_limit\": {\n            \"type\": \"integer\"\n        }\n    }\n}\n</xtwitter>\n\n<threads>\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"text_post\": {\n            \"type\": \"string\"\n        },\n        \"call_to_action\": {\n            \"type\": \"string\"\n        }\n    }\n}\n</threads>\n\n<youtube_short>\n{\n    \"type\": \"object\",\n    \"properties\": {\n        \"video_suggestion\": {\n            \"type\": \"string\"\n        },\n        \"title\": {\n            \"type\": \"string\"\n        },\n        \"description\": {\n            \"type\": \"string\"\n        },\n        \"call_to_action\": {\n            \"type\": \"string\"\n        }\n    }\n}\n</youtube_short>\n\n\n\n",
+          "documentId": "[your-doc-id-here]"
+        }
+      }
+    ],
+    "Social Media System Prompt": [
+      {
+        "json": {
+          "content": "<system>\nYou are a specialized content creation AI for social media platforms.\nYour primary function is generating platform-optimized social media content across various platforms including LinkedIn, Instagram, Facebook, Twitter (X), Threads, and YouTube Shorts. Each piece of content must:\nMatch the specific platform's audience expectations and algorithm preferences\nShowcase relevant expertise in your field\nDeliver actionable insights for your target audience\nDrive meaningful engagement through value-driven content\nOBJECTIVES:\nCreate platform-specific content following each platform's best practices\nImplement strategic hashtag usage combining general and trending tags\nDesign content that encourages user interaction and community building\nMaintain consistent brand voice while adapting to platform requirements\nIncorporate data-driven insights to maximize content performance\nOUTPUT REQUIREMENTS:\nDeliver content in valid JSON format according to the platform-specific schema\nInclude all required fields as specified in the schema\nOmit any explanatory text or code fencing in your response\nTailor content specifically to the platform indicated in the user's request\nFor each content request, adapt your output based on the platform guidelines and ensure it aligns with your organization's mission and values.  Never provide URLS for video or image suggestions and only describe the suggestion.\n</system>\n\n\n<rules>\n- Only provide final response in valid JSON for the appropriate social platform\n- Never include any preamble or further explanation\n- Always remove any ``` ```json\n</rules>\n\n\n<linkedin>\n**Style**: Professional and insightful.\n**Tone**: Business-oriented; focus on automation use cases, industry insights, and community impact.\n**Content Length**: 3-4 sentences; concise but detailed.\n**Hashtags**: #Innovation #Automation #WorkflowSolutions #DigitalTransformation #Leadership\n**Call to Action (CTA)**: Encourage comments or visits to workflows.diy's website for more insights.\n</linkedin>\n\n<instagram>\n**Style**: Visual storytelling with creative captions.\n**Tone**: Inspirational and engaging; use emojis for relatability.\n**Content Length**: 2-3 sentences paired with eye-catching visuals (e.g., infographics or workflow demos).\n**Visuals**: Showcase milestones (e.g., new workflow launches), tutorials, or product highlights.\n**CTA**: Use phrases like \"Swipe to learn more,\" \"Tag your team,\" or \"Check out the link below!\"\n**Link Placement**: Add the provided link before hashtags; if no link is provided, use \"Visit our website: https://workflows.diy.\"\n**Hashtags**: #AutomationLife #TechInnovation #WorkflowTips #Programming #Engineering\n</instagram>\n\n<facebook>\n**Style**: Friendly and community-focused.\n**Tone**: Relatable; highlight user success stories or company achievements in automation.\n**Content Length**: 2-3 sentences; conversational yet professional.\n**Hashtags**: #SmallBusinessAutomation #Entrepreneurship #Leadership #WorkflowInnovation\n**CTA**: Encourage likes, shares, comments (e.g., \"What's your favorite automation tip?\").\n</facebook>\n\n<xtwitter>\n**Style**: Concise and impactful.\n**Tone**: Crisp and engaging; spark curiosity in 150 characters or less.\n**Hashtags**: #WorkflowTrends #AIWorkflows #AutomationTips #NoCodeSolutions\n**CTA**: Drive quick engagement through retweets or replies (e.g., \"What's your go-to n8n workflow?\").\n</xtwitter>\n\n<threads>\n**Style**: Conversational and community-driven posts.\n**Tone**: Casual yet informative; encourage discussions around automation trends or innovations.\n**Content Length**: 1-2 short paragraphs with a question or thought-provoking statement at the end.\n**Hashtags**: Similar to Instagram but tailored for trending Threads topics related to automation.\n</threads>\n\n<youtube_short>\n**Style**: Short-form video content showcasing quick workflow tutorials or use cases.\n**Tone**: Authoritative yet approachable; establish workflows.diy as a leader in n8n automation solutions.\n**Content Length**:\n  - Tutorials/Reviews (long-form): 5-10 minutes\n  - Shorts/Highlights (short-form): Under 1 minute\n**CTA**: Encourage subscriptions, likes, comments (e.g., \"Subscribe for more workflow tips!\").\n</youtube_short>\n\n\n\n",
+          "documentId": "[your-doc-id-here]"
+        }
+      }
+    ],
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "route": "instagram",
+          "user_prompt": "i need an instagram post about using n8n to transform business automation with reference to a related historical fact and example"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Prepare Social Media Email Contents",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google Drive Image Meta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Short": {
+      "ai_tool": [
+        [
+          {
+            "node": "🤖Social Media Router Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schema": {
+      "main": [
+        [
+          {
+            "node": "Parse Schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "X Post": {
+      "main": [
+        [
+          {
+            "node": "X Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gpt-4o": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "File Id": {
+      "main": [
+        [
+          {
+            "node": "Get Social Post from Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI": {
+      "ai_tool": [
+        [
+          {
+            "node": "Social Media Content Creator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook": {
+      "ai_tool": [
+        [
+          {
+            "node": "🤖Social Media Router Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn": {
+      "ai_tool": [
+        [
+          {
+            "node": "🤖Social Media Router Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "X-Twiter": {
+      "ai_tool": [
+        [
+          {
+            "node": "🤖Social Media Router Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram": {
+      "ai_tool": [
+        [
+          {
+            "node": "🤖Social Media Router Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gpt-40-mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Prepare Social Media Email Contents",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gpt-4o-mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Social Media Content Creator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Approved?": {
+      "main": [
+        [
+          {
+            "node": "Get Social Post Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Schema": {
+      "main": [
+        [
+          {
+            "node": "Merge Prompts and Schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gpt-40-mini1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Prepare Email Contents",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook Post": {
+      "main": [
+        [
+          {
+            "node": "Facebook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn Post": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "System Prompt": {
+      "main": [
+        [
+          {
+            "node": "Parse System Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube Short": {
+      "ai_tool": [
+        [
+          {
+            "node": "🤖Social Media Router Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Social Content": {
+      "main": [
+        [
+          {
+            "node": "pollinations.ai1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract as JSON": {
+      "main": [
+        [
+          {
+            "node": "Merge Image and Post Contents",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Email Contents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram Image": {
+      "main": [
+        [
+          {
+            "node": "Instragram Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instragram Post": {
+      "main": [
+        [
+          {
+            "node": "Instagram Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Social Post JSON": {
+      "main": [
+        [
+          {
+            "node": "Save Social Post to Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pollinations.ai1": {
+      "main": [
+        [
+          {
+            "node": "Telegram Success Message (Optional)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Image to imgbb.com",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Image to Google Drive",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Telegram Error Message (Optional)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse System Prompt": {
+      "main": [
+        [
+          {
+            "node": "Merge Prompts and Schema",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Social Media Schema": {
+      "main": [
+        [
+          {
+            "node": "Schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "🤖Social Media Router Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Social Post Image": {
+      "main": [
+        [
+          {
+            "node": "Merge Image and Post Contents",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Prepare Email Contents": {
+      "main": [
+        [
+          {
+            "node": "Gmail User for Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Prompt & Schema": {
+      "main": [
+        [
+          {
+            "node": "Social Media Content Creator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail User for Approval": {
+      "main": [
+        [
+          {
+            "node": "Is Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Image Meta": {
+      "main": [
+        [
+          {
+            "node": "Social Post JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Image to imgbb.com": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Prompts and Schema": {
+      "main": [
+        [
+          {
+            "node": "Compose Prompt & Schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Image to Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Social Media System Prompt": {
+      "main": [
+        [
+          {
+            "node": "System Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "🤖Social Media Router Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Social Media Content Creator": {
+      "main": [
+        [
+          {
+            "node": "Social Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Image and Post Contents": {
+      "main": [
+        [
+          {
+            "node": "Social Media Publishing Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖Social Media Router Agent": {
+      "main": [
+        [
+          {
+            "node": "File Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Social Media Publishing Router": {
+      "main": [
+        [
+          {
+            "node": "X Post",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Instagram Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Facebook Post",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "LinkedIn Post",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Implement Threads Here",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Implement YouTube Shorts Here",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Social Post to Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Respond with Google Drive Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Social Post from Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Extract as JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Social Media System Prompt",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Social Media Schema",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Prompts and Schema",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Prepare Social Media Email Contents": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "🤖Social Media Router Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "1ce69485-719d-4ca0-b43a-c7524a63b19d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ab28bd0f45f75f9f6c0dc92d7cbbb170c6ea30db8577ebc0881fa6208e4abb76"
+  },
+  "id": "mfjYcxnRolrkVpt74iyuL",
+  "tags": []
+}
