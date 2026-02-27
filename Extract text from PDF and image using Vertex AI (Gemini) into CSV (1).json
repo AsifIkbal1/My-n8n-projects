@@ -1,0 +1,639 @@
+{
+  "name": "Extract text from PDF and image using Vertex AI (Gemini) into CSV",
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "models/gemini-robotics-er-1.5-preview",
+        "options": {}
+      },
+      "id": "22f55eab-495e-41e9-82a7-d4352a869c8a",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        752,
+        1120
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "4JIUazVtXCKII41y",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "11yyiFfMRlCBaij_wvQfOc1cQukqXezS-",
+          "mode": "list",
+          "cachedResultName": "pdf summary",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/11yyiFfMRlCBaij_wvQfOc1cQukqXezS-"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "9dfda5fa-a5e4-4a13-a07f-2417ad9a1ab0",
+      "name": "Get PDF or Images",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        0,
+        752
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "p1fDf8FcH7OLdIbI",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json.mimeType}}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "application/pdf",
+              "outputKey": "pdf"
+            },
+            {
+              "operation": "contains",
+              "value2": "image/",
+              "outputKey": "image"
+            }
+          ]
+        }
+      },
+      "id": "8f233da6-0ff7-40b3-ae4e-8e8a34938b74",
+      "name": "Route based on PDF or Image",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        224,
+        752
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Get PDF or Images').item.json.id }}"
+        },
+        "options": {}
+      },
+      "id": "e1a25298-697a-4b63-afe7-392e2818a57c",
+      "name": "Download PDF",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        448,
+        608
+      ],
+      "executeOnce": true,
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "p1fDf8FcH7OLdIbI",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Get PDF or Images').item.json.id }}"
+        },
+        "options": {}
+      },
+      "id": "7bae5c35-26ca-41af-9032-06a070114c95",
+      "name": "Download Image",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        448,
+        896
+      ],
+      "executeOnce": true,
+      "retryOnFail": false,
+      "typeVersion": 3,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "p1fDf8FcH7OLdIbI",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "59d9ea31-d5b2-461f-8657-9892555b43f1",
+      "name": "Extract data from PDF",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        704,
+        512
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "name": "={{$today}}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive",
+          "cachedResultName": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1apUqatsLVBhncs01KTmlZbPNWFEXxwl8",
+          "mode": "list",
+          "cachedResultName": "n8n",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1apUqatsLVBhncs01KTmlZbPNWFEXxwl8"
+        },
+        "options": {}
+      },
+      "id": "d583420c-0c0e-468d-a503-f1781b2d01ef",
+      "name": "Upload to Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        2272,
+        608
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "p1fDf8FcH7OLdIbI",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "8509de0e-7a88-478e-a53d-78dc6aff9f1b",
+      "name": "Convert to CSV2",
+      "type": "n8n-nodes-base.convertToFile",
+      "position": [
+        1024,
+        896
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "name": "={{$today}}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive",
+          "cachedResultName": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1Zo4OFCv1qWRX1jo0VL_iqUBf4v0fZEXe",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1Zo4OFCv1qWRX1jo0VL_iqUBf4v0fZEXe",
+          "cachedResultName": "CSV Exports"
+        },
+        "options": {}
+      },
+      "id": "8d23c788-8ff8-4522-b42a-a2cf63d647f9",
+      "name": "Upload to Google Drive1",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        1248,
+        896
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "p1fDf8FcH7OLdIbI",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## How to extract PDF and image text into CSV using n8n (without manual data entry)\n\nThis workflow will extract text data from PDF and images, then store it as CSV.\n\n[💡 You can read more about this workflow here](https://rumjahn.com/how-to-create-an-a-i-agent-to-analyze-matomo-analytics-using-n8n-for-free/)",
+        "height": 227,
+        "width": 461
+      },
+      "id": "7d3a0927-f5cd-4fce-8125-849da3517179",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -96,
+        464
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Get PDF or image\nYou need to create a new folder inside Google Drive for uploading your PDF and images.\n\nOnce you create a folder, you need to add your Google cloud user by going to Share -> Add user. The user email should be like: n8n-server@n8n-server-435232.iam.gserviceaccount.com",
+        "height": 289,
+        "width": 248,
+        "color": 4
+      },
+      "id": "5090bc22-2749-4246-b968-2b32cf8676bb",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -304,
+        704
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Send to Openrouter\nYou need to set up an Openrouter account to use this. It sends the data to openrouter to extract text.\n\nUse Header Auth. Name is \"Authorization\" and value is \"Bearer {API token}\".",
+        "height": 462,
+        "width": 176,
+        "color": 5
+      },
+      "id": "50e4970d-1359-441e-b3ee-8902ce6926a8",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1008,
+        304
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Vertex AI for image recogniztion\nWe send the photo to Vertex AI to extract text. You'll need to activate Vertex AI and add the correct rights to your Google cloud credentials. \n- Enable Vertex API\n- Add vertex to user account",
+        "height": 597,
+        "width": 399,
+        "color": 6
+      },
+      "id": "8215e9fb-f32f-4fb6-b298-60c6d531e924",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        592,
+        672
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extract the transactions from the image",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are given a screenshot of payment transactions. Read the image and export all the transactions as CSV. Add a column called category and based on the information assign a category name. Return only the CSV data starting with the header row."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "messageType": "imageBinary"
+            }
+          ]
+        }
+      },
+      "id": "a9df9ba6-74af-4501-855d-add344e7d24a",
+      "name": "Vertex A.I. extract text",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        672,
+        896
+      ],
+      "typeVersion": 1.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7da87041-95c0-4ad6-87c3-be87923a0c72",
+              "name": "text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1024,
+        608
+      ],
+      "id": "ab501b1a-c43b-47e0-ae1c-51befa3852eb",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function Node – Add a new field 'myNewField' to each input item\n\n// Loop through all input items\nconst newItems = $input.all().map(item => {\n  return {\n    json: {\n      ...item.json,      // Copy existing JSON fields\n      myNewField: 1      // Add new field\n    }\n  };\n});\n\nreturn newItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        608
+      ],
+      "id": "8158d8a2-a00e-428f-8c0b-5ad347e8153d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a highly intelligent AI assistant specialized in reading and summarizing PDF documents. \nYour task is to carefully read the content provided from the PDF and generate a concise, clear, and structured summary. \nFollow these rules:\n\n1. Only summarize the content; do not add unrelated information or opinions.\n2. Break the summary into sections or bullet points if applicable.\n3. Highlight key concepts, important facts, and main ideas.\n4. Keep the summary short, precise, and easy to understand.\n5. If the PDF contains code, tables, or structured data, include them in a readable format in the summary.\n6. Do not output anything besides the summary in the response.\n\nOutput Format:\n- Use headings or bullet points where needed.\n- Keep paragraphs short and clear.\n- Maintain the logical order of the content.\n\nThe user will provide the PDF text content as input. Always produce the summary based on that content."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1472,
+        608
+      ],
+      "id": "189f6056-67b3-496e-b472-4da0b3e0ecbd",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        832
+      ],
+      "id": "9d94afa3-65bb-4825-87d3-d93971c53131",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "XJ2uaJlOrZvobroJ",
+          "name": "Groq account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.text }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1616,
+        832
+      ],
+      "id": "0da616e9-b4ba-4c0c-97d5-99f94708b6c7",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6841b2e2-a6fa-463d-8aab-f5b43a73fb66",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1824,
+        608
+      ],
+      "id": "659c6ca6-06b7-4cb0-95da-d450da4cb7e4",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "output",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        2048,
+        608
+      ],
+      "id": "deaec9b9-2942-4827-97d2-1ce45c3d07df",
+      "name": "Convert to File"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Download PDF": {
+      "main": [
+        [
+          {
+            "node": "Extract data from PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Image": {
+      "main": [
+        [
+          {
+            "node": "Vertex A.I. extract text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to CSV2": {
+      "main": [
+        [
+          {
+            "node": "Upload to Google Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get PDF or Images": {
+      "main": [
+        [
+          {
+            "node": "Route based on PDF or Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract data from PDF": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Vertex A.I. extract text",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vertex A.I. extract text": {
+      "main": [
+        [
+          {
+            "node": "Convert to CSV2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route based on PDF or Image": {
+      "main": [
+        [
+          {
+            "node": "Download PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Upload to Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "068fc3d2-aa4d-4c16-b657-f9b11c96df7a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ab28bd0f45f75f9f6c0dc92d7cbbb170c6ea30db8577ebc0881fa6208e4abb76"
+  },
+  "id": "2v7O8Dc87nyPyhq0",
+  "tags": []
+}
