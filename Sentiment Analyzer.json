@@ -1,0 +1,475 @@
+{
+  "name": "Sentiment Analyzer",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "4da990bd-c62b-439a-b2f9-b89f0dc744a7",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        64,
+        672
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "inputText": "=Title: {{ $json['Review Title'] }}\nText: {{ $json['Review Text'] }}",
+        "options": {
+          "categories": "Positive, Neutral, Negative",
+          "systemPromptTemplate": "You are highly intelligent and accurate sentiment analyzer. Analyze the sentiment of the provided text. Categorize it into one of the following: {categories}. Use the provided formatting instructions. Only output the JSON.",
+          "includeDetailedResults": false,
+          "enableAutoFixing": true
+        }
+      },
+      "id": "a4f4c312-24b9-4009-8937-3d22ee7bb948",
+      "name": "Sentiment Analysis",
+      "type": "@n8n/n8n-nodes-langchain.sentimentAnalysis",
+      "position": [
+        288,
+        672
+      ],
+      "retryOnFail": false,
+      "typeVersion": 1,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {},
+      "id": "5f870b12-df17-4008-856d-e2fa97ad4675",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -384,
+        672
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1AlNyH7kZLfraFaGtH3EQ7CoxUV3eEE0ugFW4G-HS5as",
+          "mode": "list",
+          "cachedResultName": "sentiment",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AlNyH7kZLfraFaGtH3EQ7CoxUV3eEE0ugFW4G-HS5as/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1520499669,
+          "mode": "list",
+          "cachedResultName": "Excel Data Generation For Customer Feedback",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AlNyH7kZLfraFaGtH3EQ7CoxUV3eEE0ugFW4G-HS5as/edit#gid=1520499669"
+        },
+        "options": {}
+      },
+      "id": "56b4681f-5273-4be8-bcb8-469eeaf2aa64",
+      "name": "Select Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        -160,
+        672
+      ],
+      "typeVersion": 4.5,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9nmUQyXVqzobJaV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1AlNyH7kZLfraFaGtH3EQ7CoxUV3eEE0ugFW4G-HS5as",
+          "mode": "list",
+          "cachedResultName": "sentiment",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AlNyH7kZLfraFaGtH3EQ7CoxUV3eEE0ugFW4G-HS5as/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1520499669,
+          "mode": "list",
+          "cachedResultName": "Excel Data Generation For Customer Feedback",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AlNyH7kZLfraFaGtH3EQ7CoxUV3eEE0ugFW4G-HS5as/edit#gid=1520499669"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Review Title": "={{ $json['Review Title'] }}",
+            "Review Text": "={{ $json['Review Text'] }}",
+            "Sentiment": "={{ $json.sentimentAnalysis.category }}"
+          },
+          "matchingColumns": [
+            "Review Title"
+          ],
+          "schema": [
+            {
+              "id": "Review Title",
+              "displayName": "Review Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Review Text",
+              "displayName": "Review Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e019badf-37a0-4688-8b75-66251efeaee0",
+      "name": "Update Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        640,
+        800
+      ],
+      "typeVersion": 4.5,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9nmUQyXVqzobJaV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1AlNyH7kZLfraFaGtH3EQ7CoxUV3eEE0ugFW4G-HS5as",
+          "mode": "list",
+          "cachedResultName": "sentiment",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AlNyH7kZLfraFaGtH3EQ7CoxUV3eEE0ugFW4G-HS5as/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1520499669,
+          "mode": "list",
+          "cachedResultName": "Excel Data Generation For Customer Feedback",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AlNyH7kZLfraFaGtH3EQ7CoxUV3eEE0ugFW4G-HS5as/edit#gid=1520499669"
+        },
+        "options": {}
+      },
+      "id": "758e317b-7a28-46bb-a474-e528ccc88b7f",
+      "name": "Read Data from Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        352,
+        352
+      ],
+      "executeOnce": true,
+      "typeVersion": 4.5,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9nmUQyXVqzobJaV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const comments = $input.all();\nlet sentimentCount = { Positive: 0, Negative: 0, Neutral: 0 };\n\ncomments.forEach((comment) => {\n  const sentiment = comment?.json?.sentimentAnalysis;\n\n  if (!sentiment || typeof sentiment !== \"string\") {\n    return; // skip invalid or missing values\n  }\n\n  if (sentiment.includes(\"Positive\")) {\n    sentimentCount.Positive++;\n  } else if (sentiment.includes(\"Negative\")) {\n    sentimentCount.Negative++;\n  } else if (sentiment.includes(\"Neutral\")) {\n    sentimentCount.Neutral++;\n  }\n});\n\nreturn {\n  labels: [\"Positive\", \"Neutral\", \"Negative\"],\n  values: [\n    sentimentCount.Positive,\n    sentimentCount.Neutral,\n    sentimentCount.Negative,\n  ],\n};"
+      },
+      "id": "7a396999-5234-417a-88b0-07c5bb4181de",
+      "name": "Extract Number of Answers per Sentiment",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        640,
+        352
+      ],
+      "typeVersion": 2,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "chartType": "pie",
+        "labelsMode": "array",
+        "labelsArray": "={{ $json.labels }}",
+        "data": "={{ $json.values }}",
+        "output": "=data",
+        "chartOptions": {},
+        "datasetOptions": {}
+      },
+      "id": "44a104d7-b63c-44d1-915a-66134f21720b",
+      "name": "Generate QuickChart",
+      "type": "n8n-nodes-base.quickChart",
+      "position": [
+        864,
+        352
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "sendTo": "mdasifikbal688@gmail.com",
+        "subject": "Sentiment Analysis Summary",
+        "emailType": "text",
+        "message": "=Dear Team,\n\nPlease find attached the sentiment analysis summary of recent customer reviews.\n\nBest regards,\nAutomated Sentiment Analysis System",
+        "options": {
+          "appendAttribution": true,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "id": "44f2f84b-b9e5-4252-91f3-ffe8317fb9f6",
+      "name": "Send Gmail with Sentiment Chart",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        1088,
+        352
+      ],
+      "webhookId": "WEBHOOK_ID_WILL_BE_GENERATED",
+      "typeVersion": 2.1,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOpenHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        1360
+      ],
+      "id": "a13988ef-94e4-443e-8089-e64e992fb566",
+      "name": "Hugging Face Inference Model",
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "2ju4Qa0cr1t7xYrc",
+          "name": "HuggingFaceApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "496d601f-dde7-4e35-967e-c954dd804edd",
+      "name": ".",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        368,
+        928
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "khypGlJNFjyweUCf",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -384,
+        1136
+      ],
+      "id": "632cc775-4e4e-4597-83d9-eb72073daa2a",
+      "name": "Basic LLM Chain"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Read Data from Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sentiment Analysis": {
+      "main": [
+        [
+          {
+            "node": "Update Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate QuickChart": {
+      "main": [
+        [
+          {
+            "node": "Send Gmail with Sentiment Chart",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Google Sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Google Sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Data from Google Sheet": {
+      "main": [
+        [
+          {
+            "node": "Extract Number of Answers per Sentiment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Select Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Number of Answers per Sentiment": {
+      "main": [
+        [
+          {
+            "node": "Generate QuickChart",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hugging Face Inference Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    ".": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6a2dad30-ac12-458e-8fc7-492c419346ba",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ab28bd0f45f75f9f6c0dc92d7cbbb170c6ea30db8577ebc0881fa6208e4abb76"
+  },
+  "id": "qKDTCqzQZsjyEOHf",
+  "tags": []
+}
