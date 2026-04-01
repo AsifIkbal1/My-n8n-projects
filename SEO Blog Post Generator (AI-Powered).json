@@ -1,0 +1,306 @@
+{
+  "name": "SEO Blog Post Generator (AI-Powered)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-blog",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a00bc57a-9683-4bac-807b-903f31808077",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "seo-blog-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate and extract the keyword from the webhook body\nconst body = $input.first().json.body || $input.first().json;\nconst keyword = body.keyword || body.chatInput || body.query;\n\nif (!keyword || keyword.trim() === '' || keyword.includes('{{')) {\n  throw new Error('Missing or invalid keyword. Please provide a keyword in the request body as: { \"keyword\": \"your topic here\" }');\n}\n\nreturn [{\n  json: {\n    keyword: keyword.trim(),\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "400f8d21-6fa0-439c-88b2-be45668b4631",
+      "name": "Validate & Extract Keyword",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse GPT API response\nconst response = $input.first().json;\n\n// GPT response format: choices[0].message.content\nconst rawText = response.choices[0].message.content;\n\n// Clean and parse JSON\nconst cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim();\n\nlet blogData;\ntry {\n  blogData = JSON.parse(cleaned);\n} catch (e) {\n  throw new Error('Failed to parse AI response as JSON: ' + e.message + ' | Raw: ' + rawText.substring(0, 300));\n}\n\n// Validate required fields\nconst required = ['title', 'meta_description', 'related_keywords', 'headings', 'conclusion', 'cta'];\nfor (const field of required) {\n  if (!blogData[field]) {\n    throw new Error('Missing required field: ' + field);\n  }\n}\n\n// Enforce meta description length\nif (blogData.meta_description.length > 160) {\n  blogData.meta_description = blogData.meta_description.substring(0, 157) + '...';\n}\n\n// Add metadata\nblogData.generated_at = new Date().toISOString();\nblogData.keyword = $('Validate & Extract Keyword').first().json.keyword;\nblogData.status = 'success';\n\nreturn [{ json: blogData }];"
+      },
+      "id": "bf0e851d-d73a-4b72-842e-891552c10aee",
+      "name": "Parse & Validate Blog JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build a full HTML blog post from the structured data\nconst blog = $input.first().json;\n\nlet html = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>${blog.title}</title>\n  <meta name=\"description\" content=\"${blog.meta_description}\">\n  <meta name=\"keywords\" content=\"${blog.keyword}, ${(blog.related_keywords || []).join(', ')}\">\n  <style>\n    body { font-family: Georgia, serif; max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.8; color: #333; }\n    h1 { font-size: 2.2rem; color: #1a1a2e; margin-bottom: 0.5rem; }\n    h2 { font-size: 1.6rem; color: #16213e; margin-top: 2.5rem; border-left: 4px solid #0f3460; padding-left: 1rem; }\n    h3 { font-size: 1.2rem; color: #0f3460; margin-top: 1.5rem; }\n    .meta { color: #666; font-size: 0.9rem; margin-bottom: 2rem; }\n    .keywords { background: #f0f4ff; padding: 1rem; border-radius: 8px; margin: 1.5rem 0; }\n    .conclusion { background: #f9f9f9; padding: 1.5rem; border-radius: 8px; margin-top: 2rem; border-left: 4px solid #0f3460; }\n    .cta { background: #0f3460; color: white; padding: 1.5rem; border-radius: 8px; margin-top: 2rem; text-align: center; font-size: 1.1rem; }\n    .links { margin-top: 2rem; }\n    .links a { color: #0f3460; }\n    ul { padding-left: 1.5rem; }\n    li { margin-bottom: 0.5rem; }\n  </style>\n</head>\n<body>\n  <h1>${blog.title}</h1>\n  <p class=\"meta\">Generated on: ${blog.generated_at} | Keyword: <strong>${blog.keyword}</strong></p>\n  \n  <div class=\"keywords\">\n    <strong>Related Keywords:</strong> ${(blog.related_keywords || []).join(', ')}\n  </div>\n`;\n\nfor (const section of (blog.headings || [])) {\n  html += `  <h2>${section.h2}</h2>\\n`;\n  if (section.h3 && section.h3.length > 0) {\n    for (const sub of section.h3) {\n      html += `  <h3>${sub}</h3>\\n`;\n    }\n  }\n  const contentHtml = (section.content || '')\n    .replace(/\\n\\n/g, '</p><p>')\n    .replace(/\\n/g, '<br>');\n  html += `  <p>${contentHtml}</p>\\n`;\n}\n\nhtml += `\n  <div class=\"conclusion\">\n    <h2>Conclusion</h2>\n    <p>${blog.conclusion}</p>\n  </div>\n\n  <div class=\"cta\">\n    ${blog.cta}\n  </div>\n`;\n\nif (blog.links && blog.links.length > 0) {\n  html += `\n  <div class=\"links\">\n    <h3>Further Reading</h3>\n    <ul>\n`;\n  for (const link of blog.links) {\n    html += `      <li><a href=\"${link.url}\" target=\"_blank\" rel=\"noopener\">${link.text}</a> (${link.type})</li>\\n`;\n  }\n  html += `    </ul>\\n  </div>\\n`;\n}\n\nhtml += `</body>\\n</html>`;\n\nreturn [{\n  json: {\n    ...blog,\n    html_output: html\n  }\n}];"
+      },
+      "id": "c29bc659-1ab4-4d34-ab58-430eb19a25d3",
+      "name": "Build HTML Blog Post",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "1c5dd37e-1ab3-4fec-a179-8bf34925daeb",
+      "name": "Return Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Handle errors gracefully and return a structured error response\nconst error = $input.first().json;\n\nreturn [{\n  json: {\n    status: 'error',\n    message: error.message || 'An unexpected error occurred',\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "60d66b12-cb88-41e1-8d2c-dceee014e1dd",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "0b35ddf7-95ca-4acb-81b9-45de95ac39e5",
+      "name": "Return Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "content": "curl -X POST https://1716-954.n8nbysnbd.top/webhook-test/generate-blog \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"keyword\": \"digital marketing\"}'",
+        "width": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        832,
+        208
+      ],
+      "typeVersion": 1,
+      "id": "3dba343b-c2ca-4642-b8e5-88ac8a3217e2",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## I'm a note \n➡️ Takes an AI response (from Claude API)\n➡️ Extracts JSON content from it\n➡️ Validates the structure\n➡️ Cleans & formats the data\n➡️ Returns a structured blog object",
+        "width": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        544,
+        -208
+      ],
+      "typeVersion": 1,
+      "id": "032fef4c-454a-49fd-b8ee-60f2fd307c3e",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "👉 Takes structured blog JSON\n👉 Converts it into a complete HTML webpage\n👉 Adds styling + formatting\n👉 Outputs ready-to-publish HTML",
+        "height": 112,
+        "width": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        928,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "0f15a7f3-a374-4622-9b0c-e9c3350b94c0",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"max_tokens\": 4000,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert SEO content writer. Return ONLY valid JSON, no markdown, no extra text.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Generate SEO blog post for keyword: {{ $json.keyword }}. Return ONLY this JSON: {\\\"title\\\": \\\"...\\\", \\\"meta_description\\\": \\\"...\\\", \\\"related_keywords\\\": [], \\\"headings\\\": [{\\\"h2\\\": \\\"...\\\", \\\"h3\\\": [], \\\"content\\\": \\\"...\\\"}], \\\"conclusion\\\": \\\"...\\\", \\\"cta\\\": \\\"...\\\", \\\"word_count\\\": 950}\"\n    }\n  ]\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "81e8cbf5-ccb8-4c63-bb3b-27bc87504a43",
+      "name": "Gpt - Generate Blog",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "bUcKRGyWWFzab1rg",
+          "name": "Header Auth account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate & Extract Keyword",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Extract Keyword": {
+      "main": [
+        [
+          {
+            "node": "Gpt - Generate Blog",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & Validate Blog JSON": {
+      "main": [
+        [
+          {
+            "node": "Build HTML Blog Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build HTML Blog Post": {
+      "main": [
+        [
+          {
+            "node": "Return Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Handler": {
+      "main": [
+        [
+          {
+            "node": "Return Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gpt - Generate Blog": {
+      "main": [
+        [
+          {
+            "node": "Parse & Validate Blog JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ccf7a91b-a326-41a4-9865-0a44f248e16c",
+  "meta": {
+    "instanceId": "ab28bd0f45f75f9f6c0dc92d7cbbb170c6ea30db8577ebc0881fa6208e4abb76"
+  },
+  "id": "Y90XvQUt3OzlH9Qh",
+  "tags": [
+    {
+      "updatedAt": "2026-03-29T12:30:38.075Z",
+      "createdAt": "2026-03-29T12:30:38.075Z",
+      "id": "JUGUh7H3gfEWwPFF",
+      "name": "SEO"
+    },
+    {
+      "updatedAt": "2026-03-29T12:30:38.132Z",
+      "createdAt": "2026-03-29T12:30:38.132Z",
+      "id": "dvfk98CpNgrBGxCu",
+      "name": "AI Content"
+    },
+    {
+      "updatedAt": "2026-03-29T12:30:38.115Z",
+      "createdAt": "2026-03-29T12:30:38.115Z",
+      "id": "r8goj7NDF22EL834",
+      "name": "Blog Automation"
+    }
+  ]
+}
