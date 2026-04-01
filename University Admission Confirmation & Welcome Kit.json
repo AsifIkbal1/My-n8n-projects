@@ -1,0 +1,364 @@
+{
+  "name": "University Admission Confirmation & Welcome Kit",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## STEP 1: WEBHOOK TRIGGER\n\n**Test with cURL:**\n```bash\ncurl -X POST https://your-n8n-instance.com/webhook/admission-form \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"name\": \"John Doe\",\n    \"email\": \"student@example.com\",\n    \"course\": \"B.Tech Computer Science\",\n    \"college_name\": \"TechNova University\",\n    \"application_id\": \"TN-2025-0451\",\n    \"admission_date\": \"2025-10-12\"\n  }'\n```",
+        "height": 468,
+        "width": 480,
+        "color": 7
+      },
+      "id": "b3e84816-3044-4420-b722-ea4e95268621",
+      "name": "Sticky Note - Webhook Info",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2128,
+        160
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## SETUP CREDENTIALS FIRST\n\n### 1️⃣ VerifiEmail API\n- Sign up: https://verifi.email\n- Get API key from dashboard\n\n### 2️⃣ Gmail OAuth2\n- Select: \"Gmail OAuth2 API\"\n\n### 3️⃣ HTML/CSS to PDF API\n- Get API credentials at: https://pdfmunk.com\n\n\n**Test each credential before running the workflow!**",
+        "height": 376,
+        "width": 392,
+        "color": 7
+      },
+      "id": "67f2519c-bb35-4e57-bc9b-c04da3bab635",
+      "name": "Sticky Note - Credentials Setup",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2592,
+        688
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## STEP 2: EMAIL VERIFICATION\n\n**Checks Performed:**\n- ✅ RFC compliant format\n- ✅ Valid MX records exist\n- ✅ Domain is active\n- ✅ Mailbox is deliverable\n- ✅ Not a disposable email\n- ✅ Spoof-free verification\n\n**Purpose:** Prevents fake registrations and ensures email deliverability",
+        "height": 448,
+        "width": 396,
+        "color": 7
+      },
+      "id": "9855f2cf-54cf-4498-803e-17bd0734762d",
+      "name": "Sticky Note - VerifiEmail Info",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1632,
+        192
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## STEP 3: CONDITIONAL ROUTING\n\n**Decision Logic:**\nChecks `{{ $json.valid }}` from VerifiEmail\n\n**TRUE Path (Green) ✅**\nEmail is valid and deliverable\n→ Proceed to PDF generation\n→ Send confirmation email\n\n**FALSE Path (Red) ❌**\nEmail is invalid/undeliverable\n→ Stop workflow\n→ Log error with details\n→ No PDF generated\n→ No email sent",
+        "height": 496,
+        "width": 360,
+        "color": 7
+      },
+      "id": "da93de83-8b15-4219-accb-0c56b9d693e3",
+      "name": "Sticky Note - IF Condition Info",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1216,
+        128
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "errorMessage": "=Email validation failed for: {{ $('Admission Form').item.json.body.email }}\n\nApplication ID: {{ $('Admission Form').item.json.body.application_id }}\nStudent: {{ $('Admission Form').item.json.body.name }}\n\nReason: Invalid or undeliverable email address.\n\nAction Required: Contact student to verify email address."
+      },
+      "id": "0dcad07b-e17d-48c1-852b-699699c274eb",
+      "name": "Stop - Invalid Email",
+      "type": "n8n-nodes-base.stopAndError",
+      "position": [
+        -736,
+        768
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n## ERROR HANDLING\n\n**Triggered when:** Email validation fails\n\n**Actions:**\n- Workflow stops immediately\n- Error logged with full details\n- No resources wasted on invalid addresses\n\n**Error Message Includes:**\n- Student name\n- Failed email address\n- Application ID\n- Reason for failure\n- Recommended action\n",
+        "height": 492,
+        "width": 360,
+        "color": 7
+      },
+      "id": "c1ea5557-7878-4871-9b19-d3335d977a70",
+      "name": "Sticky Note - Error Path Info",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -816,
+        752
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## STEP 4: PDF GENERATION\n\n**Converts HTML template to PDF using external API**\n\n**Template Features:**\n- Professional gradient header\n- University branding colors\n- Email verification badge\n- Detailed admission info box\n- Digital signature section\n- Footer with metadata\n\n**API Response:** Returns `pdf_url` for download",
+        "height": 468,
+        "width": 400,
+        "color": 7
+      },
+      "id": "172f1eb0-294c-4ef4-a4ae-f8510ee07935",
+      "name": "Sticky Note - PDF Generation Info",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -832,
+        64
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## STEP 6: EMAIL DELIVERY\n\n**Sends welcome email with PDF attachment via Gmail**\n\n**Email Components:**\n- Personalized greeting\n- Congratulatory message\n- Program confirmation\n- Highlighted PDF attachment notice\n- Next steps checklist (5 action items)\n- Contact information\n- Professional footer\n\n**Attachment:**\nPDF file from HTTP Request node (binary format)\nAutomatically attached via Gmail's binary attachment feature",
+        "height": 516,
+        "width": 400,
+        "color": 7
+      },
+      "id": "c53a0aaf-cd26-4dbe-845f-cdabba427e70",
+      "name": "Sticky Note - Gmail Info",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## WORKFLOW OVERVIEW\n\n**Purpose:** Automated university admission confirmation system\n\n**Processing Time:** ~8-15 seconds end-to-end\n\n**Workflow Steps:**\n1️⃣ Receive admission data via webhook (POST)\n2️⃣ Verify email authenticity with VerifiEmail\n3️⃣ Route based on validation (valid/invalid)\n4️⃣ Generate personalized PDF admission letter\n5️⃣ Download PDF file via HTTP request\n6️⃣ Send email with PDF attachment via Gmail\n\n**Success Path:**\n✅ Valid email → PDF generated → Email sent\n\n**Error Path:**\n❌ Invalid email → Workflow stopped → Error logged\n\n**Perfect For:**\n- Universities & colleges\n- Educational institutions\n- Online course platforms\n- Training programs",
+        "height": 544,
+        "width": 456,
+        "color": 7
+      },
+      "id": "ff2b4730-c0b9-4171-b354-734b77f22225",
+      "name": "Sticky Note - Workflow Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2608,
+        80
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "email": "={{ $json.body.email }}"
+      },
+      "id": "9bd29f38-ec27-489a-811c-8afe62d588d8",
+      "name": "Verifi Email",
+      "type": "n8n-nodes-verifiemail.verifiEmail",
+      "position": [
+        -1520,
+        480
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "verifiEmailApi": {
+          "id": "SBRuv7YWANOwCiAh",
+          "name": "VerifiEmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "html_content": "=<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');\n    \n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n    \n    body {\n      font-family: 'Poppins', sans-serif;\n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n      padding: 40px;\n      color: #333;\n    }\n    \n    .container {\n      background: white;\n      max-width: 800px;\n      margin: 0 auto;\n      border-radius: 20px;\n      overflow: hidden;\n      box-shadow: 0 20px 60px rgba(0,0,0,0.3);\n    }\n    \n    .header {\n      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);\n      padding: 40px;\n      text-align: center;\n      color: white;\n    }\n    \n    .header h1 {\n      font-size: 32px;\n      margin-bottom: 10px;\n      font-weight: 700;\n    }\n    \n    .header p {\n      font-size: 16px;\n      opacity: 0.9;\n    }\n    \n    .content {\n      padding: 50px 40px;\n    }\n    \n    .greeting {\n      font-size: 20px;\n      color: #1e3a8a;\n      margin-bottom: 20px;\n      font-weight: 600;\n    }\n    \n    .message {\n      line-height: 1.8;\n      font-size: 15px;\n      color: #555;\n      margin-bottom: 30px;\n    }\n    \n    .info-box {\n      background: #f0f9ff;\n      border-left: 5px solid #3b82f6;\n      padding: 25px;\n      margin: 30px 0;\n      border-radius: 8px;\n    }\n    \n    .info-box h3 {\n      color: #1e3a8a;\n      margin-bottom: 15px;\n      font-size: 18px;\n    }\n    \n    .info-item {\n      display: flex;\n      margin: 12px 0;\n      font-size: 14px;\n    }\n    \n    .info-label {\n      font-weight: 600;\n      color: #1e3a8a;\n      min-width: 180px;\n    }\n    \n    .info-value {\n      color: #333;\n    }\n    \n    .footer {\n      background: #f8fafc;\n      padding: 30px 40px;\n      text-align: center;\n      border-top: 2px solid #e2e8f0;\n    }\n    \n    .footer p {\n      color: #64748b;\n      font-size: 13px;\n      line-height: 1.6;\n    }\n    \n    .signature {\n      margin-top: 30px;\n      font-style: italic;\n      color: #1e3a8a;\n    }\n    \n    .verification-badge {\n      display: inline-block;\n      background: #10b981;\n      color: white;\n      padding: 5px 15px;\n      border-radius: 20px;\n      font-size: 12px;\n      margin-top: 10px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1>🎓 ADMISSION CONFIRMATION</h1>\n      <p>Academic Year 2025-2026</p>\n      <span class=\"verification-badge\">✓ Email Verified</span>\n    </div>\n    \n    <div class=\"content\">\n      <p class=\"greeting\">Dear {{ $('Admission Form').item.json.body.name }},</p>\n      \n      <p class=\"message\">\n        Congratulations! We are delighted to inform you that you have been \n        <strong>successfully admitted</strong> to the <strong>{{ $('Admission Form').item.json.body.course }}</strong> \n        program at <strong>{{ $('Admission Form').item.json.body.college_name }}</strong>.\n      </p>\n      \n      <p class=\"message\">\n        This is a significant achievement, and we are thrilled to welcome you \n        to our academic community. Your dedication and academic excellence have \n        earned you this opportunity to pursue higher education with us.\n      </p>\n      \n      <div class=\"info-box\">\n        <h3>📋 Admission Details</h3>\n        <div class=\"info-item\">\n          <span class=\"info-label\">Student Name:</span>\n          <span class=\"info-value\">{{ $('Admission Form').item.json.body.name }}</span>\n        </div>\n        <div class=\"info-item\">\n          <span class=\"info-label\">Application ID:</span>\n          <span class=\"info-value\">{{ $('Admission Form').item.json.body.application_id }}</span>\n        </div>\n        <div class=\"info-item\">\n          <span class=\"info-label\">Program:</span>\n          <span class=\"info-value\">{{ $('Admission Form').item.json.body.course }}</span>\n        </div>\n        <div class=\"info-item\">\n          <span class=\"info-label\">Institution:</span>\n          <span class=\"info-value\">{{ $('Admission Form').item.json.body.college_name }}</span>\n        </div>\n        <div class=\"info-item\">\n          <span class=\"info-label\">Admission Date:</span>\n          <span class=\"info-value\">{{ $('Admission Form').item.json.body.admission_date }}</span>\n        </div>\n        <div class=\"info-item\">\n          <span class=\"info-label\">Email (Verified):</span>\n          <span class=\"info-value\">{{ $('Admission Form').item.json.body.email }}</span>\n        </div>\n      </div>\n      \n      <p class=\"message\">\n        Please retain this confirmation letter for your records. You will receive \n        further communication regarding orientation, course registration, and \n        other important details via email.\n      </p>\n      \n      <p class=\"signature\">\n        Warm regards,<br>\n        <strong>Office of Admissions</strong><br>\n        {{ $('Admission Form').item.json.body.college_name }}\n      </p>\n    </div>\n    \n    <div class=\"footer\">\n      <p>\n        This is an official admission confirmation document generated on {{ $('Admission Form').item.json.body.admission_date }}.\n        <br>\n        Email verification powered by VerifiEmail | Provider: {{ $('Verifi Email').item.json.details.mx.provider }}\n      </p>\n    </div>\n  </div>\n</body>\n</html>"
+      },
+      "id": "7cdba832-335c-44c1-bdaa-0731ca28c952",
+      "name": "HTML to PDF",
+      "type": "n8n-nodes-htmlcsstopdf.htmlcsstopdf",
+      "position": [
+        -736,
+        368
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "htmlcsstopdfApi": {
+          "id": "XUeB2MELVmENwno2",
+          "name": "HTML to PDF account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.pdf_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "fe8706e0-3cb4-4597-866f-d54e52bce20b",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -288,
+        368
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "content": "## STEP 5: HTTP REQUEST - DOWNLOAD PDF\n\n**Purpose:** Downloads the generated PDF file from API\n\n**Why This Node is Needed:**\nThe HTML to PDF API returns a URL to the generated PDF. This node fetches the actual PDF file in binary format so it can be attached to the email.\n\n**Output:**\nBinary PDF data stored in the `data` property, which Gmail node uses for attachment\n",
+        "height": 448,
+        "width": 400,
+        "color": 7
+      },
+      "id": "21280849-0d83-4209-8fdb-f5b683e0c5a3",
+      "name": "Sticky Note - HTTP Request Info",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -416,
+        64
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Admission Form').item.json.body.email }}",
+        "subject": "=🎓 Admission Confirmation - Welcome to {{ $('Admission Form').item.json.body.college_name }}!",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body {\n      font-family: 'Arial', sans-serif;\n      line-height: 1.6;\n      color: #333;\n      margin: 0;\n      padding: 0;\n      background-color: #f4f4f4;\n    }\n    .container {\n      max-width: 600px;\n      margin: 20px auto;\n      background: white;\n      border-radius: 10px;\n      overflow: hidden;\n      box-shadow: 0 4px 6px rgba(0,0,0,0.1);\n    }\n    .header {\n      background: linear-gradient(135deg, #1e3a8a, #3b82f6);\n      color: white;\n      padding: 40px 30px;\n      text-align: center;\n    }\n    .header h1 {\n      margin: 0;\n      font-size: 28px;\n    }\n    .content {\n      padding: 40px 30px;\n      background: #ffffff;\n    }\n    .content p {\n      margin: 15px 0;\n      font-size: 15px;\n      line-height: 1.8;\n    }\n    .highlight {\n      background: #f0f9ff;\n      border-left: 4px solid #3b82f6;\n      padding: 15px;\n      margin: 20px 0;\n      border-radius: 5px;\n    }\n    .next-steps {\n      margin: 20px 0;\n    }\n    .next-steps strong {\n      color: #1e3a8a;\n      display: block;\n      margin-bottom: 10px;\n    }\n    .step {\n      margin: 8px 0;\n      padding-left: 20px;\n    }\n    .footer {\n      background: #f8fafc;\n      padding: 20px 30px;\n      text-align: center;\n      color: #64748b;\n      font-size: 13px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1>🎉 Congratulations,{{ $('Admission Form').item.json.body.name }} !</h1>\n    </div>\n    \n    <div class=\"content\">\n      <p>Dear {{ $('Admission Form').item.json.body.name }},</p>\n      \n      <p>\n        We are <strong>thrilled to welcome you</strong> to <strong>{{ $('Admission Form').item.json.body.college_name }}</strong>! \n        Your admission to the <strong>{{ $('Admission Form').item.json.body.course }}</strong> program has been confirmed.\n      </p>\n      \n      <div class=\"highlight\">\n        <p style=\"margin: 0;\">\n          📎 <strong>Your official admission confirmation letter is attached to this email.</strong>\n          Please download and keep it for your records.\n        </p>\n      </div>\n      \n      <div class=\"next-steps\">\n        <strong>📋 Next Steps:</strong>\n        <div class=\"step\">✅ Review your admission letter carefully</div>\n        <div class=\"step\">✅ Complete the enrollment form (link in next email)</div>\n        <div class=\"step\">✅ Attend the mandatory orientation session</div>\n        <div class=\"step\">✅ Submit all required documents by the deadline</div>\n        <div class=\"step\">✅ Pay admission fees to confirm your seat</div>\n      </div>\n      \n      <p>\n        Our admissions team will contact you within 48 hours with additional details \n        about orientation, course registration, and campus facilities.\n      </p>\n      \n      <p>\n        We look forward to seeing you on campus and supporting you throughout \n        your academic journey!\n      </p>\n      \n      <p style=\"margin-top: 30px;\">\n        Best regards,<br>\n        <strong>Admissions Team</strong><br>\n        {{ $('Admission Form').item.json.body.college_name }}<br>\n        📧 admissions@technova.edu | 📞 +91-XXXX-XXXXXX\n      </p>\n    </div>\n    \n    <div class=\"footer\">\n      <p>This is an automated message. Please do not reply to this email.</p>\n      <p>If you have questions, contact our admissions office.</p>\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "id": "7f39a631-33aa-431d-9fa5-28b0e4eab84c",
+      "name": "Send Welcome Email",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        160,
+        368
+      ],
+      "webhookId": "fa68bbe7-16cf-4bfe-a942-f29d2c6011c0",
+      "typeVersion": 2,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xzxajhwDidFgZPQY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.valid }}",
+              "value2": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "id": "ff0f7c6d-0656-4485-81fb-91853f977973",
+      "name": "Is Email Valid?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -1056,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "admission-form",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "b64f193a-700a-4a85-aa19-c6d0e07c3319",
+      "name": "Admission Form",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -2016,
+        480
+      ],
+      "webhookId": "admission-form-webhook",
+      "typeVersion": 1.1
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTML to PDF": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifi Email": {
+      "main": [
+        [
+          {
+            "node": "Is Email Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Admission Form": {
+      "main": [
+        [
+          {
+            "node": "Verifi Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Email Valid?": {
+      "main": [
+        [
+          {
+            "node": "HTML to PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop - Invalid Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "849b6038-4f35-4146-987e-a62b5a9b8212",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ab28bd0f45f75f9f6c0dc92d7cbbb170c6ea30db8577ebc0881fa6208e4abb76"
+  },
+  "id": "vjTapfwgyZz3xvnA",
+  "tags": []
+}
