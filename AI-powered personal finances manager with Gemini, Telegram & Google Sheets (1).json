@@ -1,0 +1,809 @@
+{
+  "name": "AI-powered personal finances manager with Gemini, Telegram & Google Sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "2d5b2f97-1f8f-48d9-8c81-515e77996efe",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": ""
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "2d880d6b-56c3-4daa-b4ec-3a72d397b41b",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "leftValue": "={{ $json.message.voice }}",
+                    "rightValue": ""
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Voice"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "e87cc475-bcfd-48c9-86a5-0a8073408260",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        336,
+        640
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Bot Trigger').item.json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "id": "d1105d91-dd89-462a-90cc-c3b39c2df691",
+      "name": "Get a file",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        592,
+        832
+      ],
+      "webhookId": "e3f61732-60a5-4116-8350-18f853286b1d",
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": {
+          "id": "pK4y4f6ki8F9SMKI",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "models/gemini-2.5-flash",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "inputType": "binary",
+        "options": {}
+      },
+      "id": "b4a40659-d88a-417b-81a4-bffe7d0d742b",
+      "name": "Transcribe a recording",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "position": [
+        800,
+        800
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "4JIUazVtXCKII41y",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "1c8a39b3-343b-460f-8778-02e1e7b3928c",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        1056,
+        928
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "4JIUazVtXCKII41y",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "26f761da-63a5-43e3-a8ba-678045bfeae0",
+      "name": "Calculator",
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "position": [
+        1328,
+        928
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Update row in sheet in Google Sheets. Use this tool to update registers in Google Sheets.",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "13cBrPQ371LzD7XTPyb1bM3tvVxvUQ6lD78VuzZiHUvc",
+          "mode": "list",
+          "cachedResultName": "ফাইন্যান্স ম্যানেজমেন্ট",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13cBrPQ371LzD7XTPyb1bM3tvVxvUQ6lD78VuzZiHUvc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "প্রথম পৃষ্ঠা",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13cBrPQ371LzD7XTPyb1bM3tvVxvUQ6lD78VuzZiHUvc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "data": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('data', ``, 'string') }}",
+            "row_number": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('row_number', ``, 'string') }}",
+            "ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ID', ``, 'string') }}",
+            "টাইপ": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('____', ``, 'string') }}",
+            "মূল্য": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('_____', ``, 'string') }}",
+            "বিভাগ": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('_____', ``, 'string') }}",
+            "পেমেন্ট পদ্ধতি": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('______________', ``, 'string') }}",
+            "বর্ণনা": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('______', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "টাইপ",
+              "displayName": "টাইপ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "মূল্য",
+              "displayName": "মূল্য",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "বিভাগ",
+              "displayName": "বিভাগ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "পেমেন্ট পদ্ধতি",
+              "displayName": "পেমেন্ট পদ্ধতি",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "বর্ণনা",
+              "displayName": "বর্ণনা",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "635f86ce-4130-4ba8-b47b-044a0b228fb9",
+      "name": "update_register",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "position": [
+        1584,
+        1072
+      ],
+      "typeVersion": 4.6,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9nmUQyXVqzobJaV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get all row in sheet of Google Sheets. You can use this tool to get all informations.",
+        "documentId": {
+          "__rl": true,
+          "value": "13cBrPQ371LzD7XTPyb1bM3tvVxvUQ6lD78VuzZiHUvc",
+          "mode": "list",
+          "cachedResultName": "ফাইন্যান্স ম্যানেজমেন্ট",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13cBrPQ371LzD7XTPyb1bM3tvVxvUQ6lD78VuzZiHUvc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "প্রথম পৃষ্ঠা",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13cBrPQ371LzD7XTPyb1bM3tvVxvUQ6lD78VuzZiHUvc/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "5ca5a4c7-aee9-4074-ad88-9638bffd7df8",
+      "name": "get_all_registers",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "position": [
+        1728,
+        1072
+      ],
+      "typeVersion": 4.6,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9nmUQyXVqzobJaV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Append row in sheet in Google Sheets. You can use this tool to append new registers in the Google Sheets.",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "13cBrPQ371LzD7XTPyb1bM3tvVxvUQ6lD78VuzZiHUvc",
+          "mode": "list",
+          "cachedResultName": "ফাইন্যান্স ম্যানেজমেন্ট",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13cBrPQ371LzD7XTPyb1bM3tvVxvUQ6lD78VuzZiHUvc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "প্রথম পৃষ্ঠা",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13cBrPQ371LzD7XTPyb1bM3tvVxvUQ6lD78VuzZiHUvc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "data": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('data', ``, 'string') }}",
+            "ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ID', ``, 'string') }}",
+            "টাইপ": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('____', ``, 'string') }}",
+            "মূল্য": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('_____', ``, 'string') }}",
+            "বিভাগ": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('_____', ``, 'string') }}",
+            "পেমেন্ট পদ্ধতি": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('______________', ``, 'string') }}",
+            "বর্ণনা": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('______', ``, 'string') }}",
+            "row_number": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('row_number', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "টাইপ",
+              "displayName": "টাইপ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "মূল্য",
+              "displayName": "মূল্য",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "বিভাগ",
+              "displayName": "বিভাগ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "পেমেন্ট পদ্ধতি",
+              "displayName": "পেমেন্ট পদ্ধতি",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "বর্ণনা",
+              "displayName": "বর্ণনা",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "RAW"
+        }
+      },
+      "id": "ba6e0b77-b4f0-4764-a372-4eb22f7bf243",
+      "name": "create_new_register",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "position": [
+        1920,
+        1072
+      ],
+      "typeVersion": 4.6,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9nmUQyXVqzobJaV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Delete rows from sheet in Google Sheets. You can use this tool to delete registers in Google Sheets.",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "13cBrPQ371LzD7XTPyb1bM3tvVxvUQ6lD78VuzZiHUvc",
+          "mode": "list",
+          "cachedResultName": "ফাইন্যান্স ম্যানেজমেন্ট",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13cBrPQ371LzD7XTPyb1bM3tvVxvUQ6lD78VuzZiHUvc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "প্রথম পৃষ্ঠা",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13cBrPQ371LzD7XTPyb1bM3tvVxvUQ6lD78VuzZiHUvc/edit#gid=0"
+        },
+        "startIndex": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start_Row_Number', ``, 'number') }}",
+        "numberToDelete": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Number_of_Rows_to_Delete', ``, 'number') }}"
+      },
+      "id": "bb7a79d5-dbdf-425e-8282-d1d67d8ccc51",
+      "name": "delete_register",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "position": [
+        1440,
+        1072
+      ],
+      "typeVersion": 4.6,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9nmUQyXVqzobJaV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Bot Trigger').item.json.message.from.id }}"
+      },
+      "id": "70e9d522-1333-438c-a3fa-45d42936e0aa",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        1200,
+        944
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.content?.parts[0].text || $json.message.text }}",
+        "options": {
+          "systemMessage": "=You are a financial assistant specialized in managing personal expenses and income via Telegram.\n\n## 🎯 MAIN OBJECTIVE\n\nInterpret user messages on Telegram and manage financial records in a Google Sheets spreadsheet, providing accurate financial analyses and insights, **ALWAYS formatted exclusively in Telegram-valid HTML**.\n\n## 📋 SPREADSHEET STRUCTURE\n\n**Available columns:**\n\n* **`id`**: Unique sequential identifier (auto-incremented)\n* **`tipo`**: \"income\" or \"expense\"\n* **`valor`**: Monetary value (format: 1234.56)\n* **`categoria`**: Classification of the expense/income\n* **`metodo_pagamento`**: Payment method used\n* **`descricao`**: Details about the transaction\n* **`data`**: Transaction date (format: yyyy-MM-dd)\n\n---\n\n## 🚨 CRITICAL OPERATION RULES\n\n### 1. 📊 DATA QUERY\n\n* ✅ **ALWAYS** use `get_all_registers` BEFORE answering any question\n* ❌ **NEVER** rely on conversation memory for financial data\n* ✅ **ALWAYS** base responses on the data returned by the tool\n* ⚠️ If no data is available, request more information from the user\n\n### 2. 📝 TRANSACTION RECORDING\n\n**Mandatory flow:**\n\n1. 🔍 First: `get_all_registers` to check the last ID\n2. ➕ Calculate: `new_id = last_id + 1`\n3. 💾 Create: `create_new_register` with all fields filled\n4. ✅ Confirm: success message formatted in HTML\n\n### 3. 🧠 MESSAGE INTERPRETATION\n\n**Automatically extract:**\n\n* **Type:** `spent, paid, bought` = expense | `received, earned, entered` = income\n* **Value:** Numbers with currency symbols, e.g., R\\$, or numeric values\n* **Category:** Context of the transaction (e.g., \"lunch\" → Food)\n* **Method:** `card, pix, cash, debit, credit`\n* **Date:** If not specified, use current date\n* **Description:** Details provided by the user\n\n### 4. 📂 SUGGESTED CATEGORIES\n\n**🔴 Expenses:** Food, Transportation, Housing, Health, Education, Leisure, Shopping, Services, Others\n\n**🟢 Income:** Salary, Freelance, Investments, Sales, Gift, Others\n\n---\n\n## ⚠️ HTML FORMATTING MANDATORY - TELEGRAM\n\n> **🚨 ABSOLUTE RULE:** ALL responses MUST be written EXCLUSIVELY in Telegram-valid HTML!\n\n### 📝 HTML TAGS SUPPORTED BY TELEGRAM:\n\n* `<b>text</b>` or `<strong>text</strong>` → bold text\n* `<i>text</i>` or `<em>text</em>` → italic text\n* `<u>text</u>` or `<ins>text</ins>` → underlined text\n* `<s>text</s>` or `<strike>text</strike>` or `<del>text</del>` → strikethrough\n* `<code>text</code>` → inline code with monospace font\n* `<pre>code</pre>` → preformatted code block\n* `<a href=\"url\">link</a>` → clickable link\n* `<blockquote>quote</blockquote>` → blockquote\n\n### 🚨 CRITICAL FORMATTING INSTRUCTIONS:\n\n1. **NEVER** use any other formatting syntax\n2. **ALWAYS** write responses in pure HTML\n3. **ALWAYS** use single line breaks to separate sections\n4. **ALWAYS** use the HTML tags listed above\n5. **ALWAYS** set `parse_mode: 'HTML'` in messages\n6. **LIMIT** emojis to a maximum of 3 per message\n7. **ESCAPE** special HTML characters: `<` → `&lt;`, `>` → `&gt;`, `&` → `&amp;`\n\n---\n\n## 📊 TELEGRAM HTML RESPONSE TEMPLATES\n\n### 📝 TEMPLATE: New Record\n\n```\n<b>✅ Transaction Successfully Recorded!</b>\n\n<b>📋 Record Details:</b>\n<b>🆔 ID:</b> <code>{id}</code>\n<b>📊 Type:</b> <code>{tipo}</code>\n<b>💵 Value:</b> <code>R$ {valor}</code>\n<b>📂 Category:</b> <code>{categoria}</code>\n<b>💳 Method:</b> <code>{metodo_pagamento}</code>\n<b>📅 Date:</b> <code>{data}</code>\n<b>📝 Description:</b> {descricao}\n\n<i>💡 Type</i> <code>balance</code> <i>to see financial summary</i>\n<i>💡 Type</i> <code>expenses today</code> <i>for today's expenses</i>\n```\n\n### 💰 TEMPLATE: Balance Query\n\n```\n<b>💰 FINANCIAL SUMMARY</b>\n\n<b>📊 Current Status:</b>\n<b>📈 Total Income:</b> <code>R$ {total_receitas}</code>\n<b>📉 Total Expenses:</b> <code>R$ {total_despesas}</code>\n<b>💎 Current Balance:</b> <code>R$ {saldo}</code>\n\n<b>📅 Analyzed Period:</b>\n<b>From:</b> <code>{data_inicial}</code> <b>to:</b> <code>{data_final}</code>\n\n<b>📊 Status:</b> {saldo > 0 ? \"🟢 Positive Balance!\" : \"🔴 Warning: Negative Balance\"}\n```\n\n### 📊 TEMPLATE: Category Spending\n\n```\n<b>📊 CATEGORY ANALYSIS</b>\n\n<b>📅 Period:</b> {periodo}\n\n<b>🍔 Food:</b> <code>R$ {valor}</code> <i>({percentual}%)</i>\n<b>🚗 Transportation:</b> <code>R$ {valor}</code> <i>({percentual}%)</i>\n<b>🏠 Housing:</b> <code>R$ {valor}</code> <i>({percentual}%)</i>\n<b>🎮 Leisure:</b> <code>R$ {valor}</code> <i>({percentual}%)</i>\n<b>💸 TOTAL:</b> <code>R$ {total}</code>\n\n<b>📈 Insights:</b>\n<b>🔝 Highest expense:</b> {categoria} <i>({percentual}%)</i>\n<b>📉 Lowest expense:</b> {categoria} <i>({percentual}%)</i>\n<b>💡 Recommendation:</b> <i>{dica_personalizada}</i>\n```\n\n### 📋 TEMPLATE: Transaction History\n\n```\n<b>📋 FINANCIAL HISTORY</b>\n\n<b>🔍 Applied Filters:</b>\n<b>📅 Period:</b> <code>{data_inicial}</code> to <code>{data_final}</code>\n<b>📊 Type:</b> <code>{tipo}</code>\n<b>📂 Category:</b> <code>{categoria}</code>\n\n<b>📊 Transactions Found:</b>\n\n<b>ID {id}:</b> <code>{data}</code> | {tipo_icone} | <i>{descricao}</i> | {categoria} | <code>R$ {valor}</code>\n\n<b>📊 Summary:</b>\n<b>📋 Total Records:</b> <code>{quantidade}</code>\n<b>💵 Total Expenses:</b> <code>R$ {total_despesas}</code>\n<b>💰 Total Income:</b> <code>R$ {total_receitas}</code>\n```\n\n### 📊 TEMPLATE: Monthly Report\n\n```\n<b>📊 MONTHLY REPORT - {mes}/{ano}</b>\n\n<b>💰 Executive Dashboard</b>\n\n<b>🎯 Key Indicators:</b>\n<b>💎 Month Balance:</b> <code>R$ {saldo}</code> <i>({variacao}%)</i>\n<b>📈 Income:</b> <code>R$ {receitas}</code>\n<b>📉 Expenses:</b> <code>R$ {despesas}</code>\n<b>💪 Savings Rate:</b> <code>{taxa}%</code>\n\n<b>📈 Period Income:</b>\n<b>💰 {fonte}:</b> <code>R$ {valor}</code> | <code>{data}</code>\n<b>TOTAL INCOME:</b> <code>R$ {total_receitas}</code>\n\n<b>📉 Top 5 Expense Categories:</b>\n<b>1. 🏠 Housing:</b> <code>R$ {valor}</code> <i>({percentual}%)</i>\n<b>2. 🍔 Food:</b> <code>R$ {valor}</code> <i>({percentual}%)</i>\n<b>3. 🚗 Transportation:</b> <code>R$ {valor}</code> <i>({percentual}%)</i>\n<b>4. 🎮 Leisure:</b> <code>R$ {valor}</code> <i>({percentual}%)</i>\n<b>5. 📚 Education:</b> <code>R$ {valor}</code> <i>({percentual}%)</i>\n\n<b>💡 Insights and Recommendations:</b>\n<b>⚠️ Alert:</b> <i>Spending on {categoria} increased by {percentual}%</i>\n<b>✅ Congratulations:</b> <i>You saved R$ {valor} this month</i>\n<b>🎯 Goal:</b> <i>Suggested R$ {valor} for next month</i>\n```\n\n### ⚠️ TEMPLATE: Error Messages\n\n```\n<b>⚠️ Oops! Something went wrong</b>\n\n<b>🚨 Problem Details:</b>\n<b>Reason:</b> <i>{explicacao}</i>\n\n<b>🔧 How to fix:</b>\n<i>{solucao}</i>\n\n<b>💡 Correct Example:</b>\n<code>{exemplo}</code>\n\n<i>💬 Need help? Type</i> <code>help</code> <i>to see all commands</i>\n```\n\n### 🔄 TEMPLATE: Confirmations\n\n```\n<b>🔄 Confirmation Required</b>\n\n<b>⚠️ You are about to {acao} this record:</b>\n\n<b>🆔 ID:</b> <code>{id}</code>\n<b>📊 Type:</b> <code>{tipo}</code>\n<b>💵 Value:</b> <code>R$ {valor}</code>\n```\n\n\n<b>📝 Description:</b> <i>{descricao}</i> <b>📅 Date:</b> <code>{data}</code>\n\n<b>🚨 This action cannot be undone!</b>\n\n<b>📱 To confirm:</b> Type <code>confirm</code> <b>❌ To cancel:</b> Type <code>cancel</code>\n\n```\n\n---\n\n## ⚡ MANDATORY WORKFLOW\n\n### 1. 📱 **Receive Message**\n- Analyze user intent\n- Identify request type\n\n### 2. 🔍 **If Query**\n```\n\nget\\_all\\_registers → process data → respond in HTML\n\n```\n\n### 3. ➕ **If Record**\n```\n\nget\\_all\\_registers → calculate ID → create\\_new\\_register → confirm in HTML\n\n```\n\n### 4. ✏️ **If Edit**\n```\n\nget\\_all\\_registers → show current → update\\_register → confirm in HTML\n\n```\n\n### 5. 🗑️ **If Delete**\n```\n\nget\\_all\\_registers → confirm → delete\\_register → notify in HTML\n\n```\n\n---\n\n## 🔧 AVAILABLE TOOLS\n\n- **`get_all_registers`**: Query records (always use first)\n- **`create_new_register`**: Add record (after get_all_registers)\n- **`update_register`**: Edit record (with valid ID)\n- **`delete_register`**: Delete record (with prior confirmation)\n- **`Calculator`**: Complex calculations (if needed)\n\n---\n\n## 📝 ABSOLUTE HTML RULES\n\n### ✅ ALWAYS Use:\n1. **`<b>text</b>`** for bold and important highlights\n2. **`<i>text</i>`** for italics and secondary notes\n3. **`<code>text</code>`** for IDs, monetary values, dates, and commands\n4. **`<u>text</u>`** for important underlines (when needed)\n5. **`<s>text</s>`** for strikethrough (when appropriate)\n6. **Single line breaks** to separate sections\n7. **Limited emojis** (max 3 per response)\n\n### 🚨 NEVER Use:\n- Any syntax other than HTML\n- Special formatting symbols\n- Any visual formatting not supported by HTML\n- Unsupported HTML tags for Telegram\n- Excessive emojis (more than 3 per message)\n\n---\n\n## 💡 AVAILABLE COMMANDS (HTML)\n\n```\n\n<b>💡 Quick Commands:</b> <code>balance</code> - <i>View full financial summary</i> <code>expenses today</code> - <i>Current day expenses</i> <code>income month</code> - <i>Current month income</i> <code>report</code> - <i>Full financial analysis</i> <code>edit ID X</code> - <i>Modify a specific record</i> <code>delete ID X</code> - <i>Remove a specific record</i>\n\n<i>💬 Type</i> <code>help</code> <i>to see all available commands</i>\n\n```\n\n---\n\n## 📌 CRITICAL SETTINGS\n\n- **📅 Current date/time:** `{{ $now.format('yyyy-MM-dd HH:mm:ss') }}`\n- **📏 Response limit:** 4096 characters (Telegram limit)\n- **🎨 Formatting:** HTML mandatory (`parse_mode: 'HTML'`)\n- **🔒 Security:** Sensitive data - maximum accuracy\n- **😊 Tone:** Friendly and professional\n- **📱 Platform:** Telegram Bot API\n\n---\n\n## 🎯 FINAL CRITICAL REMINDERS\n\n> **🚨 ABSOLUTE RULES - NEVER VIOLATE:**\n> 1. **ALWAYS** write ALL responses in Telegram-valid HTML\n> 2. **ALWAYS** use `get_all_registers` before any financial operation\n> 3. **ALWAYS** confirm actions with HTML templates\n> 4. **ALWAYS** set `parse_mode: 'HTML'` in all messages\n> 5. **ALWAYS** be accurate with financial data\n> 6. **NEVER** use any formatting other than pure HTML\n> 7. **NEVER** mix HTML with other formatting syntaxes\n> 8. Respond **ONLY** with Telegram-valid HTML, without including code, instructions, explanations, or any other format.\n\n**🎯 Main Objective:** Provide precise financial responses using only Telegram-valid HTML!\n\n**📋 Required Parse Mode:** `parse_mode: 'HTML'` in all messages sent by the bot!"
+        }
+      },
+      "id": "3f4fa7f0-56a8-46fb-9397-b0b676c3a4ba",
+      "name": "Financial Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1216,
+        544
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Bot Trigger').item.json.message.from.id }}",
+        "text": "=⚠️ Desculpe! Não consigo processar imagens ou vídeos. Por favor, envie sua mensagem em texto ou voz.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "ee48925d-2a79-4e4a-b819-f92a950ea47f",
+      "name": "Send Fallback Message",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        512,
+        1072
+      ],
+      "webhookId": "54a95e4f-38b0-4992-a5c1-81791dba21ab",
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": {
+          "id": "pK4y4f6ki8F9SMKI",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Bot Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "04e92ef4-ebae-4289-803f-86c26c75431e",
+      "name": "Send Response",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1760,
+        528
+      ],
+      "webhookId": "54a95e4f-38b0-4992-a5c1-81791dba21ab",
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": {
+          "id": "pK4y4f6ki8F9SMKI",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "15a5f4c2-0c8e-414e-b595-244a60a7b53e",
+      "name": "Telegram Bot Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "position": [
+        112,
+        656
+      ],
+      "webhookId": "3fb3235c-eaa7-421e-a3d2-90cc42e88f1e",
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": {
+          "id": "pK4y4f6ki8F9SMKI",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## How This Workflow Works\n\n1. Telegram Trigger receives user messages (text or audio).\n2. AI Node interprets message and extracts transaction details.\n3. Google Sheets Node creates/updates/deletes records.\n4. Response Node sends confirmation back to the user in Telegram (HTML format).\n",
+        "height": 192,
+        "width": 608
+      },
+      "id": "f9756dfc-0d90-4114-9aae-b9893eca951f",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -48,
+        304
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Google Sheets Configuration\n\n1. Create a Google Sheet with the following columns: \n   id | type | value | category | payment_method | description | date\n\n2. Leave rows empty for automatic insertion.\n\n3. Set up a Google Service Account and share the sheet with it.\n\n4. Configure the Google Sheets node with proper credentials and Sheet name.\n",
+        "height": 256,
+        "width": 560,
+        "color": 7
+      },
+      "id": "2574f3ee-41d9-404d-8e5f-7ae047ad2029",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2080,
+        720
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Read the Note\nWho’s it for\nThis template is designed for individuals who want to gain full control over their personal finances without the hassle of manual tracking. Ideal for freelancers, small business owners, or anyone who wants a simple, automated way to monitor income and expenses.\n\nHow it works / What it does\nUsing n8n, Telegram, and Google Sheets, this workflow allows you to log, edit, and query your financial transactions through simple Telegram messages. The AI interprets your input—whether text or audio—and automatically categorizes your income and expenses. Responses are delivered fully formatted in Telegram HTML, giving you clean, readable summaries and insights.\n\nFeatures include:\n\nAdd, edit, and delete transactions automatically\nQuery totals and category-specific expenses, e.g., “How much did I spend on food this month?”\nGenerate financial summaries and monthly reports\nAutomatic ID assignment and date handling\nHow to set up\nDeploy this workflow on your self-hosted n8n instance.\nConnect your Telegram Bot and Google Sheets account.\nConfigure the Google Gemini AI node for message interpretation.\nUpdate sheet headers and categories if needed.\nStart sending messages to your Telegram bot to track expenses instantly.\n",
+        "height": 496,
+        "width": 896
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        992,
+        1280
+      ],
+      "typeVersion": 1,
+      "id": "33be409c-8fac-4f11-9e04-f64351ee9c77",
+      "name": "Sticky Note6"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Financial Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Fallback Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "Financial Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Financial Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Financial Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete_register": {
+      "ai_tool": [
+        [
+          {
+            "node": "Financial Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update_register": {
+      "ai_tool": [
+        [
+          {
+            "node": "Financial Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_all_registers": {
+      "ai_tool": [
+        [
+          {
+            "node": "Financial Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_new_register": {
+      "ai_tool": [
+        [
+          {
+            "node": "Financial Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Bot Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Financial Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Financial Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "83d6ae73-cb0a-4f69-a2b1-7434e4407e22",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ab28bd0f45f75f9f6c0dc92d7cbbb170c6ea30db8577ebc0881fa6208e4abb76"
+  },
+  "id": "JJv54d0iDuupedZT",
+  "tags": []
+}
