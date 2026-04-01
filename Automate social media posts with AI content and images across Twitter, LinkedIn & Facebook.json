@@ -1,0 +1,299 @@
+{
+  "name": "Automate social media posts with AI content and images across Twitter, LinkedIn & Facebook",
+  "nodes": [
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4",
+          "cachedResultName": "GPT-4"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Craft a 50-character title highlighting a specific n8n workflow challenge.Every hour, generate a discussion about a unique n8n topic. \nEnsure the topic is different each time. \nProvide a professional and concise explanation, \nfocusing on automation, workflows, or integrations. \nAvoid repetition of previous topics."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cc55fac1-d33f-443a-a0d4-a4455319413d",
+      "name": "Message a model",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        -368,
+        272
+      ],
+      "typeVersion": 1.8,
+      "credentials": {
+        "openAiApi": {
+          "id": "27DsLusII8YLgYFO",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4",
+          "mode": "list",
+          "cachedResultName": "GPT-4"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=\nWrite a tweet that breaks this topic down.\n\nBe solution oriented and make it easily readable with easy vocabulary\n\nAdd some hashtags too "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2c7ea527-c42e-4430-8900-2493e8218f2f",
+      "name": "Message a model1",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        -16,
+        0
+      ],
+      "typeVersion": 1.8,
+      "credentials": {
+        "openAiApi": {
+          "id": "27DsLusII8YLgYFO",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "prompt": "=Generate a japanese anime style image ",
+        "options": {}
+      },
+      "id": "92c71ef6-bcfa-4567-814c-faf79dd4a5e6",
+      "name": "Generate an image",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        0,
+        496
+      ],
+      "typeVersion": 1.8,
+      "credentials": {
+        "openAiApi": {
+          "id": "27DsLusII8YLgYFO",
+          "name": "OpenAi account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Message a model1').item.json.message.content }}",
+        "additionalFields": {}
+      },
+      "id": "b043be44-291c-4808-8abe-5028d9fbf797",
+      "name": "Create Tweet",
+      "type": "n8n-nodes-base.twitter",
+      "position": [
+        560,
+        320
+      ],
+      "typeVersion": 2,
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "4LQ7otaU9fBPRiCk",
+          "name": "X account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "person": "IcTo8woRjb",
+        "text": "={{ $json.message.content }}",
+        "additionalFields": {}
+      },
+      "id": "acb6e55a-94f2-4c26-aec5-0aa45a173e59",
+      "name": "Create a post",
+      "type": "n8n-nodes-base.linkedIn",
+      "position": [
+        560,
+        128
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "linkedInOAuth2Api": {
+          "id": "AeEvaRyCsofibSsi",
+          "name": "LinkedIn account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "graphApiVersion": "v22.0",
+        "node": " ",
+        "options": {}
+      },
+      "id": "bd37364b-f05d-4a4f-9010-79da618cf26f",
+      "name": "Facebook Graph API",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "position": [
+        -592,
+        736
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "ScH7fd9oqEqM6luB",
+          "name": "Facebook Graph account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 3
+            }
+          ]
+        }
+      },
+      "id": "1d46e468-c89f-43b9-98a0-a222cbaca2b8",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -592,
+        272
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v22.0",
+        "node": "={{ $json.message.content }}",
+        "edge": "=",
+        "options": {}
+      },
+      "id": "54f2e663-1a9d-4469-89ea-5748710d8c72",
+      "name": "Life Lense AI",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "position": [
+        560,
+        512
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "ScH7fd9oqEqM6luB",
+          "name": "Facebook Graph account"
+        }
+      },
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create Tweet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a post",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Life Lense AI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Create Tweet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a post",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Life Lense AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "Create Tweet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a post",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Life Lense AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "184a28d6-f256-481b-8bdb-b06ab0107d10",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ab28bd0f45f75f9f6c0dc92d7cbbb170c6ea30db8577ebc0881fa6208e4abb76"
+  },
+  "id": "LnDJ3PbeXRKILOGJ",
+  "tags": []
+}
