@@ -1,0 +1,772 @@
+{
+  "name": "Daffodil Physiology Center AI Appointment Booking Assistant with ElevenLabs Voice Integration",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "elevenlabs-appointment",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "dc59486c-fc7e-4792-81da-1b16c20020ab",
+      "name": "ElevenLabs Voice Call",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        96,
+        496
+      ],
+      "webhookId": "87cfbe6d-d575-4dba-b52f-588c1aa57777"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('HTTP Request').item.json }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a highly reliable AI Appointment Booking Assistant for Daffodil Physiology Center.\n\nYou MUST follow this STRICT STATE MACHINE. Never skip steps or assume missing data.\n\nCURRENT STATE RULES:\n\nSTATE 0 - GREETING (only once):\nSay: Assalamu Alaikum. Thank you for contacting the Daffodil Physiology Center. We are pleased to assist you with your appointment request.\nAsk: Would you like to take an appointment at our Physiology Center? Please reply Yes or No.\nNext: STATE 1\n\nSTATE 1 - APPOINTMENT_INTENT:\nIf NO: Say: Thank you for your response. If you need any assistance in the future, please feel free to contact us. Have a wonderful day. END CHAT.\nIf YES: Say: Thank you for your interest. To proceed further, we need to verify your Student Hub information. Please provide your Student Hub ID for verification.\nNext: STATE 2\n\nSTATE 2 - STUDENT_HUB_ID_COLLECTION:\nIf no ID provided: Say: Kindly complete your Student Hub registration first. Once completed, please share your Student Hub ID so that we can proceed. STAY IN STATE 2.\nIf ID provided: Extract the ID and move to STATE 3 for verification.\n\nSTATE 3 - VERIFICATION_PENDING:\nWait for external verification result.\nIf VERIFIED: Say: Thank you, . Your Student Hub registration has been successfully verified. Please let us know which date you would prefer for your appointment. \nNext: STATE 4\nIf FAILED: Say: Sorry, we could not verify your Student Hub ID. Please check your ID and try again.\nNext: STATE 2\n\nSTATE 4 - DATE_COLLECTION:\nIf invalid format: Say: Please provide the date in correct format: Year/Month/Day (YYYY/MM/DD). STAY IN STATE 4.\nIf valid: Say: We are checking availability for your selected date...\nNext: STATE 5\n\nSTATE 5 - DATE_AVAILABILITY_CHECK:\nIf NOT AVAILABLE: Say: The selected date is not available. Please choose an alternative date. STAY IN STATE 5.\nIf AVAILABLE: Say: Your selected date is available. Please select your preferred time slot: Morning, Afternoon, or Evening.\nNext: STATE 6\n\nSTATE 6 - TIME_SLOT_SELECTION:\nIf invalid: Say: Invalid selection. Please choose: Morning, Afternoon, or Evening. STAY IN STATE 6.\nIf valid: Say: We are confirming your appointment for the selected date and time slot...\nNext: STATE 7\n\nSTATE 7 - CONFIRMATION_DONE:\nSay: Your appointment has been successfully scheduled. A confirmation email containing your appointment date, time, and necessary instructions will be sent to your registered email address shortly.\nSay: Thank you for choosing the Daffodil Physiology Center. We truly appreciate your cooperation. If you require any further assistance, please feel free to contact us. We look forward to serving you.\nEND CHAT.\n\nRULES:\n- Keep responses SHORT and CLEAR\n- Never skip verification\n- Never assume missing data\n- Always re-ask if input is invalid\n- Be polite and professional\n- Follow state order strictly"
+        }
+      },
+      "id": "6c749cc2-5b45-4170-83a1-e7d14424840a",
+      "name": "Appointment Booking Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        768,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "5f12f289-e86e-45aa-9369-141aa25bbbf5",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        720
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "OKnqvu0dUYNpHnsy",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"current_state\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"enum\": [\"GREETING\", \"APPOINTMENT_INTENT\", \"STUDENT_HUB_ID_COLLECTION\", \"VERIFICATION_PENDING\", \"DATE_COLLECTION\", \"TIME_SLOT_SELECTION\", \"CONFIRMATION_DONE\"],\n\t\t\t\"description\": \"Current conversation state\"\n\t\t},\n\t\t\"student_hub_id\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"Student Hub ID if provided\"\n\t\t},\n\t\t\"appointment_date\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"Appointment date in YYYY/MM/DD format (Year/Month/Day)\"\n\t\t},\n\t\t\"time_slot\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"enum\": [\"Morning\", \"Afternoon\", \"Evening\"],\n\t\t\t\"description\": \"Selected time slot\"\n\t\t},\n\t\t\"user_intent\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"enum\": [\"yes\", \"no\", \"unknown\"],\n\t\t\t\"description\": \"User's appointment intent\"\n\t\t}\n\t},\n\t\"required\": [\"current_state\"]\n}"
+      },
+      "id": "0db9ebb2-62e9-47a7-a8f7-e3f7ef7aa2b3",
+      "name": "Extract Booking Data",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        912,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.current_state }}",
+                    "rightValue": "STUDENT_HUB_ID_COLLECTION",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "8ad6d413-d9ef-4109-ab5b-aa82a63531f4"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "verify_student"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.current_state }}",
+                    "rightValue": "DATE_COLLECTION",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "cd5754d2-da28-46b2-ba94-2d475d0630bb"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "check_date_availability"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.current_state }}",
+                    "rightValue": "TIME_SLOT_SELECTION",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "dba13fcb-e478-408a-bf85-e07b7860f72a"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "finalize_booking"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e8731f7a-f55b-477b-a05c-9952ad8cdeaf",
+      "name": "Route by State",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1120,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "<__PLACEHOLDER_VALUE__student_hub_verification_api_endpoint__>",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "student_hub_id",
+              "value": "={{ $json.student_hub_id }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "16eba2dc-62f8-4096-ac74-d27977bfd9f3",
+      "name": "Verify Student Hub ID",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1792,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const dateStr = $input.item.json.appointment_date;\n\nif (!dateStr) {\n  return [{ json: { valid: false, error: 'No date provided' } }];\n}\n\n// Check format YYYY/MM/DD\nconst dateRegex = /^\\d{4}\\/(0[1-9]|1[0-2])\\/(0[1-9]|[12][0-9]|3[01])$/;\n\nif (!dateRegex.test(dateStr)) {\n  return [{ json: { valid: false, error: 'Invalid format. Use YYYY/MM/DD' } }];\n}\n\n// Parse and validate date\nconst [year, month, day] = dateStr.split('/').map(Number);\nconst date = new Date(year, month - 1, day);\n\n// Check if date is valid\nif (date.getDate() !== day || date.getMonth() !== month - 1 || date.getFullYear() !== year) {\n  return [{ json: { valid: false, error: 'Invalid date' } }];\n}\n\n// Check if date is in the future\nconst today = new Date();\ntoday.setHours(0, 0, 0, 0);\n\nif (date < today) {\n  return [{ json: { valid: false, error: 'Date must be in the future' } }];\n}\n\nreturn [{ json: { valid: true, date: dateStr, ...($input.item.json) } }];"
+      },
+      "id": "3b1eed83-fa33-4e37-87bf-abd3b5b61936",
+      "name": "Validate Date Format",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "student_hub_id",
+              "value": "={{ $json.student_hub_id }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "student_name",
+              "value": "={{ $json.student_name || 'N/A' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "appointment_date",
+              "value": "={{ $json.appointment_date }}",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "time_slot",
+              "value": "={{ $json.time_slot }}",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "booking_timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "id-6",
+              "name": "status",
+              "value": "confirmed",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "32ec5c1c-152e-4659-8ee9-e0c071eb2a9a",
+      "name": "Prepare Appointment Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1568,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "<__PLACEHOLDER_VALUE__appointments_table__>"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {}
+      },
+      "id": "c15e04d6-5515-457d-adb8-42251306a8d3",
+      "name": "Store Appointment",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1792,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@daffodilphysiology.edu",
+        "toEmail": "<__PLACEHOLDER_VALUE__student_email__>",
+        "subject": "Appointment Confirmation - Daffodil Physiology Center",
+        "emailFormat": "text",
+        "text": "=Dear Student,\n\nYour appointment at Daffodil Physiology Center has been successfully confirmed.\n\nAppointment Details:\n- Student Hub ID: {{ $json.student_hub_id }}\n- Date: {{ $json.appointment_date }}\n- Time Slot: {{ $json.time_slot }}\n\nPlease arrive 10 minutes before your scheduled time.\n\nIf you need to reschedule or have any questions, please contact us.\n\nThank you for choosing Daffodil Physiology Center.\n\nBest regards,\nDaffodil Physiology Center",
+        "options": {}
+      },
+      "id": "1919bbc0-a6ef-4d62-a809-c605f6e9fc04",
+      "name": "Send Confirmation Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2016,
+        304
+      ],
+      "webhookId": "a0645f46-0fdb-40bb-b956-ee19168d4baa"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d60e279c-d4b5-4976-91dc-6df3e9426052",
+      "name": "Return to ElevenLabs",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2240,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "response",
+              "value": "={{ $('Appointment Booking Agent').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "session_id",
+              "value": "={{ $('ElevenLabs Voice Call').item.json.body?.session_id || 'default-session' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6912d1ee-e0c1-40a4-8b8c-5a29bab8e4af",
+      "name": "Format Direct Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2016,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $('Check Date Availability').item.json.rowExists }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "false"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c2640715-dae0-4a60-a4fd-f3e589b38b90",
+      "name": "Is Date Available?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1792,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "response",
+              "value": "The selected date is not available. Please choose an alternative date.",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "status",
+              "value": "date_unavailable",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "session_id",
+              "value": "={{ $('ElevenLabs Voice Call').item.json.body.session_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3e64bd32-481c-4f07-9922-87362e976ea0",
+      "name": "Date Not Available Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2016,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "rowExists",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "<__PLACEHOLDER_VALUE__appointments_table__>"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "appointment_date",
+              "keyValue": "={{ $json.appointment_date }}"
+            },
+            {
+              "keyName": "time_slot",
+              "keyValue": "={{ $json.time_slot }}"
+            }
+          ]
+        }
+      },
+      "id": "90df03b2-ccd7-404c-87cb-2bbd26228b77",
+      "name": "Check Time Slot Availability",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "<__PLACEHOLDER_VALUE__appointments_table__>"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "appointment_date",
+              "keyValue": "={{ $json.appointment_date }}"
+            }
+          ]
+        }
+      },
+      "id": "853e8e25-21a6-4652-832e-2bee00b1faa5",
+      "name": "Check Date Availability",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1568,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://studentshub.daffodilvarsity.edu.bd/api/external/get-user",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "client-id",
+              "value": "my_university_partner"
+            },
+            {
+              "name": "access-token",
+              "value": "secure_token_12345_abcde"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "01786961727"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        320,
+        496
+      ],
+      "id": "aab8cdf6-5307-4de5-b987-8331b0900d9e",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0c820c83-f3d6-43df-b6a3-a76141b2a242",
+              "leftValue": "={{ $json.data.phone }}",
+              "rightValue": "={{ $('ElevenLabs Voice Call').item.json.body.searchQuery }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        544,
+        496
+      ],
+      "id": "6f9bac9b-28dd-45b8-acbc-83acf96503f2",
+      "name": "If"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "ElevenLabs Voice Call": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Appointment Booking Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Booking Data": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Appointment Booking Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Appointment Booking Agent": {
+      "main": [
+        [
+          {
+            "node": "Route by State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by State": {
+      "main": [
+        [
+          {
+            "node": "Verify Student Hub ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate Date Format",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Time Slot Availability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Appointment Data": {
+      "main": [
+        [
+          {
+            "node": "Store Appointment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Appointment": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Confirmation Email": {
+      "main": [
+        [
+          {
+            "node": "Return to ElevenLabs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Direct Response": {
+      "main": [
+        [
+          {
+            "node": "Return to ElevenLabs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Student Hub ID": {
+      "main": [
+        [
+          {
+            "node": "Format Direct Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Date Format": {
+      "main": [
+        [
+          {
+            "node": "Check Date Availability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Date Available?": {
+      "main": [
+        [
+          {
+            "node": "Format Direct Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Date Not Available Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date Not Available Response": {
+      "main": [
+        [
+          {
+            "node": "Return to ElevenLabs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Time Slot Availability": {
+      "main": [
+        [
+          {
+            "node": "Prepare Appointment Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Date Availability": {
+      "main": [
+        [
+          {
+            "node": "Is Date Available?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Appointment Booking Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0e4d9622-185b-40c9-9872-5529f410f705",
+  "meta": {
+    "instanceId": "049124c1c433adfe7b4e5c6749c23e09f4b2d60bf7dd47c77fd1aec5def7af84"
+  },
+  "id": "iSLRwTvPwoYYglxy",
+  "tags": []
+}
