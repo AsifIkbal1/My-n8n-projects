@@ -1,0 +1,1073 @@
+{
+  "name": "Lead Genaration",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-intake",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "4a261256-8819-4552-861c-d6c01d153242",
+      "name": "📥 Lead Intake Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -4624,
+        192
+      ],
+      "webhookId": "lead-intake-001",
+      "notes": "ENTRY POINT — Receives new leads from website contact forms, landing pages, or any external source.\n\nExpected JSON payload:\n{\n  'name': 'John Smith',\n  'email': 'john@company.com',\n  'company': 'Acme Corp',\n  'message': 'We need help with our automation...'\n}\n\nWebhook URL: https://your-n8n.com/webhook/lead-intake\n\nIntegrate with:\n- Webflow forms\n- Typeform (via Zapier webhook)\n- WordPress Contact Form 7\n- Any custom HTML form\n\nAlternative trigger: Use 'Google Sheets Trigger' node to watch for new rows."
+    },
+    {
+      "parameters": {
+        "jsCode": "// ══════════════════════════════════════════════════\n// NODE 2: Data Cleaning, Validation & Enrichment\n// ══════════════════════════════════════════════════\n\nconst body = $input.first().json.body || $input.first().json;\n\n// ── Step 1: Extract & clean fields ──────────────\nconst name    = String(body.name    || '').trim();\nconst email   = String(body.email   || '').trim().toLowerCase();\nconst company = String(body.company || '').trim();\nconst message = String(body.message || '').trim();\n\n// ── Step 2: Validate required fields ────────────\nconst errors = [];\nif (name.length   < 2)    errors.push('name is missing or too short');\nif (company.length < 1)   errors.push('company is missing');\nif (message.length < 10)  errors.push('message is too short (min 10 chars)');\n\n// ── Step 3: Validate email format ───────────────\nconst emailRegex = /^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}$/;\nif (!emailRegex.test(email)) errors.push('email format is invalid');\n\n// ── Step 4: Block disposable/free email domains ─\nconst blockedDomains = ['gmail.com','yahoo.com','hotmail.com','outlook.com','aol.com','protonmail.com','temp-mail.org','mailinator.com'];\nconst emailDomain = email.split('@')[1] || '';\nconst isFreeEmail = blockedDomains.includes(emailDomain);\n\n// ── Step 5: Extract company from email if missing\nconst companyFinal = company || (emailDomain.split('.')[0].charAt(0).toUpperCase() + emailDomain.split('.')[0].slice(1));\n\n// ── Step 6: Sanitize name (remove HTML, excess spaces)\nconst nameSanitized = name.replace(/<[^>]*>/g, '').replace(/\\s+/g, ' ').trim();\nconst firstName = nameSanitized.split(' ')[0];\n\n// ── Step 7: Generate lead metadata ───────────────\nconst leadId = `LEAD-${Date.now()}-${Math.floor(Math.random() * 10000)}`;\nconst receivedAt = new Date().toISOString();\n\nif (errors.length > 0) {\n  throw new Error(`Lead validation failed: ${errors.join(', ')}`);\n}\n\nreturn [{\n  json: {\n    leadId,\n    name: nameSanitized,\n    firstName,\n    email,\n    emailDomain,\n    company: companyFinal,\n    message,\n    isFreeEmail,\n    receivedAt,\n    status: 'New',\n    followUpCount: 0,\n    tags: [],\n    score: null,\n    scoreLabel: null,\n  }\n}];"
+      },
+      "id": "b7094381-682e-4da9-a5d9-311f8a9a62c6",
+      "name": "🧹 Validate & Clean Lead Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4400,
+        192
+      ],
+      "notes": "Cleans and validates all incoming lead fields.\n\nValidation rules:\n- name: min 2 chars\n- email: valid format regex\n- company: required\n- message: min 10 chars\n\nEnrichment:\n- Extracts firstName for personalisation\n- Detects free email domains (B2B filter)\n- Generates unique leadId\n- Sets initial status = 'New'\n\nThrows error on invalid data → caught by Error Trigger workflow."
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "13na-5jCnMWZRkuKglOjDYvBwGerQGrMWOrFxEKwmnY0",
+          "mode": "list",
+          "cachedResultName": "lead_gen_crm",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13na-5jCnMWZRkuKglOjDYvBwGerQGrMWOrFxEKwmnY0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1417646216,
+          "mode": "list",
+          "cachedResultName": "📋 Leads CRM",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13na-5jCnMWZRkuKglOjDYvBwGerQGrMWOrFxEKwmnY0/edit#gid=1417646216"
+        },
+        "options": {}
+      },
+      "id": "6a61df8b-84b7-4044-886a-519732e615b1",
+      "name": "🔍 Google Sheets: Duplicate Check",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -4176,
+        192
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9nmUQyXVqzobJaV",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Checks if email already exists in the Leads sheet.\n\nLooks up the 'Email' column in the 'Leads' tab.\n\nReturns:\n- Empty array → NEW lead (proceed)\n- Row data → DUPLICATE (skip)\n\nThis prevents sending duplicate emails to the same person."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "is_duplicate",
+              "leftValue": "={{ $json.Email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isEmpty"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "67b82b62-5a62-46b6-a375-f3b582fdfd53",
+      "name": "🔀 IF: New Lead (Not Duplicate)?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -3968,
+        192
+      ],
+      "notes": "Routes based on duplicate check result.\n\nTRUE  → Email not found in sheet → NEW LEAD → continue pipeline\nFALSE → Email already in sheet  → DUPLICATE → send 200 OK to webhook and stop\n\nThis is the deduplication gate."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, message: 'Lead already exists in our system.', email: $json.email }) }}",
+        "options": {}
+      },
+      "id": "3b214a08-6b0c-4dbd-b2ba-d75b11157cf1",
+      "name": "⛔ Duplicate: Acknowledge & Stop",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -3744,
+        320
+      ],
+      "notes": "Returns 200 OK to the form/webhook source for duplicate leads.\nDoes NOT add to CRM or send any email.\nGraceful handling — no error shown to user."
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert B2B sales copywriter. Your job is to:\n1. Score the lead (1-10) based on quality signals\n2. Generate a warm, personalised outreach email\n3. Suggest relevant tags\n\nYou MUST respond with ONLY valid JSON — no markdown, no preamble:\n{\n  \"score\": <integer 1-10>,\n  \"scoreLabel\": \"hot\" | \"warm\" | \"cold\",\n  \"scoreReason\": \"<1 sentence>\",\n  \"tags\": [\"<tag1>\", \"<tag2>\"],\n  \"emailSubject\": \"<compelling subject line>\",\n  \"emailBody\": \"<full HTML email body>\",\n  \"calendarCTA\": \"<call-to-action sentence for booking>\"\n}\n\nSCORING GUIDE:\n- hot (8-10): Business email, specific technical need, mentions budget/urgency/team\n- warm (5-7): Business email, general need, vague requirement\n- cold (1-4): Free email, very short message, no clear business need\n\nEMAIL RULES:\n- Address them by first name\n- Reference their company name\n- Mention their specific problem/message\n- Tone: professional, warm, and helpful — NOT pushy\n- Include a clear CTA to book a call\n- Keep under 200 words\n- Use basic HTML: <p>, <strong>, <a> tags only\n\nTAGGING RULES:\nChoose 2-4 relevant tags from: [automation, saas, agency, startup, enterprise, ecommerce, marketing, development, consulting, finance, healthcare, education, high-priority, follow-up-needed]",
+              "role": "system"
+            },
+            {
+              "content": "=Analyse this B2B lead and generate personalised outreach:\n\nName: {{ $json.name }}\nFirst Name: {{ $json.firstName }}\nEmail: {{ $json.email }}\nEmail Domain: {{ $json.emailDomain }}\nCompany: {{ $json.company }}\nMessage: {{ $json.message }}\nFree Email: {{ $json.isFreeEmail }}\nReceived At: {{ $json.receivedAt }}\n\nGenerate a highly personalised outreach email that references their specific message and company."
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 1200,
+          "temperature": 0.7
+        }
+      },
+      "id": "2ddb3a04-dc32-4d68-a889-f9ce44196833",
+      "name": "🤖 OpenAI: Score + Personalise Email",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.3,
+      "position": [
+        -3744,
+        192
+      ],
+      "notes": "CORE AI NODE — Does 3 things in one call:\n\n1. LEAD SCORING (1-10):\n   hot  (8-10): High-intent, business email, specific need\n   warm (5-7):  Moderate intent, some signals\n   cold (1-4):  Low signal, free email, vague message\n\n2. EMAIL PERSONALISATION:\n   - References their exact message\n   - Mentions company name\n   - Addresses specific pain point\n   - Professional but warm tone\n   - Clear booking CTA\n\n3. TAGGING:\n   - Automatically categorises lead by industry/need\n\nModel: gpt-4o-mini (cheap, fast, excellent quality)\nTemp: 0.7 (creative but focused)\nOutput: Strict JSON (no markdown wrappers)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse OpenAI response safely\nconst aiRaw = $input.first().json;\nconst prev   = $('🧹 Validate & Clean Lead Data').first().json;\n\nconst rawContent = aiRaw.choices?.[0]?.message?.content\n  || aiRaw.message?.content || '{}';\n\nlet aiData = {};\ntry {\n  const cleaned = rawContent.replace(/```json|```/g, '').trim();\n  aiData = JSON.parse(cleaned);\n} catch(e) {\n  // Fallback defaults\n  aiData = {\n    score: 5, scoreLabel: 'warm',\n    scoreReason: 'Could not parse AI response',\n    tags: ['follow-up-needed'],\n    emailSubject: `Following up on your enquiry, ${prev.firstName}`,\n    emailBody: `<p>Hi ${prev.firstName},</p><p>Thank you for reaching out! I'd love to discuss how we can help ${prev.company}. Let's schedule a quick call.</p>`,\n    calendarCTA: 'Book a 15-minute discovery call'\n  };\n}\n\n// Validate score range\nconst score = Math.min(10, Math.max(1, parseInt(aiData.score) || 5));\nconst scoreLabel = ['hot','warm','cold'].includes(aiData.scoreLabel)\n  ? aiData.scoreLabel\n  : (score >= 8 ? 'hot' : score >= 5 ? 'warm' : 'cold');\n\n// Add booking link to email body\nconst calendarLink = process.env.CALENDAR_BOOKING_URL || 'https://calendly.com/yourusername/30min';\nconst emailBodyWithCal = (aiData.emailBody || '')\n  + `\\n<p><a href=\"${calendarLink}\" style=\"background:#2563EB;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;display:inline-block;\">📅 ${aiData.calendarCTA || 'Book a Free Discovery Call'}</a></p>`;\n\nreturn [{\n  json: {\n    ...prev,\n    score,\n    scoreLabel,\n    scoreReason:  aiData.scoreReason  || '',\n    tags:         aiData.tags         || [],\n    emailSubject: aiData.emailSubject  || `Reaching out — ${prev.company}`,\n    emailBody:    emailBodyWithCal,\n    calendarCTA:  aiData.calendarCTA  || 'Book a call',\n    aiProcessedAt: new Date().toISOString(),\n  }\n}];"
+      },
+      "id": "b46677eb-af32-4a17-b679-54b599da3075",
+      "name": "🔧 Parse AI Response + Add Calendar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3520,
+        192
+      ],
+      "notes": "Safely parses AI JSON response.\n\nFallback handling:\n- JSON.parse fails → uses default template\n- Score out of range → clamped to 1-10\n- Missing scoreLabel → derived from score\n\nCalendar injection:\nAppends a styled CTA button linking to CALENDAR_BOOKING_URL env var.\n\nOutputs complete lead object ready for:\n- Google Sheets storage\n- Email sending\n- Slack notification"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "value": "={{ $env.GOOGLE_SHEET_ID }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "value": "Leads",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Lead ID": "={{ $json.leadId }}",
+            "Name": "={{ $json.name }}",
+            "Email": "={{ $json.email }}",
+            "Company": "={{ $json.company }}",
+            "Message": "={{ $json.message }}",
+            "Score": "={{ $json.score }}",
+            "Score Label": "={{ $json.scoreLabel }}",
+            "Score Reason": "={{ $json.scoreReason }}",
+            "Tags": "={{ $json.tags.join(', ') }}",
+            "Status": "New",
+            "Follow-up Count": "0",
+            "Received At": "={{ $json.receivedAt }}",
+            "Email Sent At": "",
+            "Follow-up 1 At": "",
+            "Follow-up 2 At": "",
+            "Replied At": "",
+            "Notes": ""
+          },
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "7fda5947-d059-4694-a796-93566b8e7347",
+      "name": "📊 Google Sheets: Add Lead Row",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -3296,
+        192
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5X1xhw7ezqEBN9fh",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "notes": "Adds new lead to 'Leads' tab in Google Sheets CRM.\n\nColumns written:\nLead ID | Name | Email | Company | Message |\nScore | Score Label | Score Reason | Tags | Status |\nFollow-up Count | Received At | Email Sent At |\nFollow-up 1 At | Follow-up 2 At | Replied At | Notes\n\nSheet must have these headers in Row 1.\nSee google_sheets_setup.md for full structure."
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "={{ $json.emailSubject }}",
+        "message": "={{ $json.emailBody }}",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "={{ $env.YOUR_EMAIL }}"
+        }
+      },
+      "id": "42c522c2-d47f-42b2-a5f6-ff8a76848014",
+      "name": "📧 Gmail: Send Initial Outreach",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        -3088,
+        192
+      ],
+      "webhookId": "78380bb1-505b-452d-a22d-31a17411dd44",
+      "notes": "Sends the AI-personalised initial outreach email.\n\nDynamic fields:\n- sendTo: lead's email\n- subject: AI-generated subject line\n- body: AI-generated HTML with calendar CTA button\n\nreplyTo: YOUR_EMAIL env var (your business email)\nSo when lead replies, it goes to your inbox.\n\nAlternative: Replace with SMTP node for other email providers."
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "value": "={{ $env.GOOGLE_SHEET_ID }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "value": "Leads",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Contacted",
+            "Email Sent At": "={{ new Date().toISOString() }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "f752b68b-5df4-4c33-9709-d7801584efad",
+      "name": "📊 Sheets: Update Status → Contacted",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -2864,
+        192
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5X1xhw7ezqEBN9fh",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "notes": "Updates the lead row status to 'Contacted' after email is sent.\n\nMatch key: Email column\nUpdates:\n- Status: Contacted\n- Email Sent At: current timestamp"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "=🎯 *New Lead Received!*\n\n👤 *Name:* {{ $json.name }}\n🏢 *Company:* {{ $json.company }}\n📧 *Email:* {{ $json.email }}\n🏷️ *Tags:* {{ $json.tags.join(', ') }}\n\n📊 *AI Score:* {{ $json.score }}/10 ({{ $json.scoreLabel.toUpperCase() }})\n💡 *Why:* {{ $json.scoreReason }}\n\n📝 *Message Preview:*\n{{ $json.message.substring(0, 150) }}...\n\n✅ Initial email sent. Follow-up scheduled.",
+        "additionalFields": {
+          "disable_notification": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "204c9287-42f4-4c12-b67c-4fa88ed00d93",
+      "name": "📱 Telegram: New Lead Alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -2640,
+        192
+      ],
+      "webhookId": "cd29c928-af89-451d-a2b8-56de3d8e9029",
+      "notes": "Sends Telegram notification for every new lead.\n\nIncludes:\n- Lead name, company, email\n- AI score + label (hot/warm/cold)\n- Score reasoning\n- Message preview (150 chars)\n- Confirmation email was sent\n\nAlternative: Replace with Slack node."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, leadId: $json.leadId, score: $json.score, scoreLabel: $json.scoreLabel, message: 'Lead processed successfully. Personalised email sent.' }) }}",
+        "options": {}
+      },
+      "id": "7a4c680c-a09f-417a-aba2-cf2307214caf",
+      "name": "✅ Webhook: Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -2416,
+        192
+      ],
+      "notes": "Returns HTTP 200 to the form/source after successful processing.\nIncludes leadId and score in response.\nThe website can show a custom success message."
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "days"
+      },
+      "id": "be7327e8-e161-43ed-8dad-da58ee681fdb",
+      "name": "⏳ Wait: 3 Days (Follow-up 1)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2208,
+        192
+      ],
+      "webhookId": "4a48854e-705b-4869-b7f8-72f66e5792a0",
+      "notes": "Pauses workflow for 3 days before checking if lead has replied.\n\nThis runs ASYNCHRONOUSLY — the webhook has already responded.\nThe workflow resumes after 3 days.\n\nIn production: n8n stores the paused state and resumes automatically.\n\nAdjust timing:\n- Hot leads: 2 days\n- Warm leads: 3 days\n- Cold leads: 4-5 days"
+    },
+    {
+      "parameters": {
+        "operation": "lookup",
+        "documentId": {
+          "value": "={{ $env.GOOGLE_SHEET_ID }}",
+          "mode": "id"
+        }
+      },
+      "id": "bd4b74ea-8411-4b85-aa13-6c7f9547bafe",
+      "name": "🔍 Sheets: Check Reply Status",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -1984,
+        192
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5X1xhw7ezqEBN9fh",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "notes": "After 3-day wait, re-reads the lead row from Sheets.\n\nWhy re-read? Because the status may have changed:\n- If lead replied → status = 'Replied' (updated by Gmail trigger)\n- If lead converted → status = 'Converted'\n- If still 'Contacted' → no reply yet → send follow-up\n\nReturns current row data including Status field."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "not_replied",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "Contacted",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9b10afc6-27f4-4d88-9a94-33a141499cac",
+      "name": "🔀 IF: No Reply Yet? (FU1)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1760,
+        192
+      ],
+      "notes": "Checks if lead has replied before sending Follow-up 1.\n\nStatus == 'Contacted' → No reply → send follow-up\nStatus == 'Replied' OR 'Converted' → Has replied → stop workflow\n\nThis prevents sending follow-ups to people who already engaged."
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are a friendly B2B sales follow-up specialist. Write a brief, non-pushy follow-up email.\n\nRules:\n- Keep it under 100 words\n- Acknowledge they may be busy\n- Add a new value point or insight not mentioned before\n- Different from the initial email — do NOT repeat the same message\n- End with a soft CTA\n- Return ONLY JSON: { \"subject\": \"...\", \"body\": \"<HTML>\" }",
+              "role": "system"
+            },
+            {
+              "content": "=Write Follow-up #1 for this lead:\n\nName: {{ $json.Name }}\nCompany: {{ $json['Company'] }}\nOriginal Message: {{ $json['Message'] }}\nScore: {{ $json['Score'] }} ({{ $json['Score Label'] }})\nTags: {{ $json['Tags'] }}"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 600,
+          "temperature": 0.6
+        }
+      },
+      "id": "56dde91f-8cb6-4545-99db-40b37ba12fdd",
+      "name": "🤖 AI: Generate Follow-up 1",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1536,
+        80
+      ],
+      "notes": "Generates a different, non-repetitive follow-up email.\n\nKey differences from initial email:\n- Shorter (under 100 words)\n- Acknowledges they may be busy\n- Adds a new value point\n- Softer, less salesy tone\n\nCost: ~$0.0001 per follow-up"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiRaw = $input.first().json;\nconst sheetData = $('🔍 Sheets: Check Reply Status').item.json;\n\nconst raw = aiRaw.choices?.[0]?.message?.content || '{}';\nlet parsed = {};\ntry {\n  parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());\n} catch(e) {\n  parsed = {\n    subject: `Quick follow-up — ${sheetData['Company'] || 'your enquiry'}`,\n    body: `<p>Hi ${(sheetData['Name'] || 'there').split(' ')[0]},</p><p>Just circling back on my previous email. I'd love to find 15 minutes to chat about how we can help ${sheetData['Company']}.</p>`\n  };\n}\n\nconst calendarLink = process.env.CALENDAR_BOOKING_URL || 'https://calendly.com/yourusername/30min';\nparsed.body += `<p><a href=\"${calendarLink}\" style=\"background:#2563EB;color:white;padding:8px 16px;border-radius:4px;text-decoration:none;\">📅 Book a Quick 15-min Call</a></p>`;\n\nreturn [{\n  json: {\n    email:        sheetData['Email'],\n    name:         sheetData['Name'],\n    company:      sheetData['Company'],\n    fu1Subject:   parsed.subject,\n    fu1Body:      parsed.body,\n    followUpNum:  1,\n  }\n}];"
+      },
+      "id": "f0e3009a-b2d2-40bb-8116-69f15ae38083",
+      "name": "🔧 Parse Follow-up 1 Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1328,
+        80
+      ],
+      "notes": "Parses Follow-up 1 AI response with fallback.\nInjects calendar booking button.\nMerges with original lead data from Sheets."
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "={{ $json.fu1Subject }}",
+        "message": "={{ $json.fu1Body }}",
+        "options": {
+          "replyTo": "={{ $env.YOUR_EMAIL }}"
+        }
+      },
+      "id": "eeb94768-543c-4535-849b-9ed450bb0636",
+      "name": "📧 Gmail: Send Follow-up 1",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        -1104,
+        80
+      ],
+      "webhookId": "57cc43ea-a64a-4272-ae11-0501c0638221",
+      "notes": "Sends AI-generated Follow-up 1 email.\nSame replyTo as initial email for reply tracking."
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "value": "={{ $env.GOOGLE_SHEET_ID }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "value": "Leads",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Follow-up Count": "1",
+            "Follow-up 1 At": "={{ new Date().toISOString() }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "08c90e6e-ea09-464d-a631-1d30e6af82a6",
+      "name": "📊 Sheets: Log Follow-up 1 Sent",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -880,
+        80
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5X1xhw7ezqEBN9fh",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "notes": "Records that Follow-up 1 was sent.\nUpdates Follow-up Count = 1\nRecords exact timestamp."
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "days"
+      },
+      "id": "15131a83-aeb3-4cfa-b615-e20b2a64d805",
+      "name": "⏳ Wait: 3 More Days (Follow-up 2)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -656,
+        80
+      ],
+      "webhookId": "1bc94683-977a-4fcd-9a65-afc03098829d",
+      "notes": "Waits another 3 days after Follow-up 1 before checking for reply again."
+    },
+    {
+      "parameters": {
+        "operation": "lookup",
+        "documentId": {
+          "value": "={{ $env.GOOGLE_SHEET_ID }}",
+          "mode": "id"
+        }
+      },
+      "id": "a793f8c6-e1de-4ceb-a5a6-fa1744aa3758",
+      "name": "🔍 Sheets: Check Reply (Pre FU2)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -448,
+        80
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5X1xhw7ezqEBN9fh",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "notes": "Re-reads lead status before sending Follow-up 2.\nIf replied between FU1 and FU2, stops the chain."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "still_no_reply",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "Contacted",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b4ae83fa-81fb-419e-a576-f66ebb28b036",
+      "name": "🔀 IF: Still No Reply? (FU2)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        80
+      ],
+      "notes": "Last chance check before sending final follow-up.\nStatus == 'Contacted' → still no reply → send FU2\nStatus == 'Replied' → replied! → stop, workflow ends gracefully"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "Write a final, graceful closing follow-up email. This is the last contact attempt.\n\nRules:\n- Maximum 60 words\n- Acknowledge this is the last email\n- Leave the door open for future contact\n- Zero pressure\n- Friendly and professional\n- Return ONLY JSON: { \"subject\": \"...\", \"body\": \"<HTML>\" }",
+              "role": "system"
+            },
+            {
+              "content": "=Final follow-up for:\nName: {{ $json.Name }}\nCompany: {{ $json['Company'] }}"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 400,
+          "temperature": 0.5
+        }
+      },
+      "id": "15b578d3-f5a7-48a4-87ab-46ed93b6f6eb",
+      "name": "🤖 AI: Generate Follow-up 2 (Final)",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "notes": "Generates the FINAL follow-up email.\n\nTone is completely different:\n- Much shorter (60 words max)\n- Graceful closing\n- Zero pressure\n- 'Leaving the door open' style\n- No hard CTA"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiRaw = $input.first().json;\nconst sheetData = $('🔍 Sheets: Check Reply (Pre FU2)').item.json;\n\nconst raw = aiRaw.choices?.[0]?.message?.content || '{}';\nlet parsed = {};\ntry {\n  parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());\n} catch(e) {\n  const firstName = (sheetData['Name'] || 'there').split(' ')[0];\n  parsed = {\n    subject: `Closing the loop, ${firstName}`,\n    body: `<p>Hi ${firstName},</p><p>I'll wrap up my outreach here — I know timing isn't always right. If ${sheetData['Company']} ever needs help with automation, I'm just an email away. Wishing you all the best!</p>`\n  };\n}\n\nreturn [{\n  json: {\n    email:       sheetData['Email'],\n    fu2Subject:  parsed.subject,\n    fu2Body:     parsed.body,\n    followUpNum: 2,\n  }\n}];"
+      },
+      "id": "3aab290a-463b-4134-a712-329a2942a53a",
+      "name": "🔧 Parse Follow-up 2 Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "notes": "Parses final follow-up email. NO calendar button on last email — too pushy."
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "={{ $json.fu2Subject }}",
+        "message": "={{ $json.fu2Body }}",
+        "options": {
+          "replyTo": "={{ $env.YOUR_EMAIL }}"
+        }
+      },
+      "id": "f99700c4-26fa-4859-99e7-ec205f55cc39",
+      "name": "📧 Gmail: Send Follow-up 2 (Final)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "webhookId": "c31b752b-054f-45d9-b451-184861618c63",
+      "notes": "Sends the final, graceful closing follow-up email."
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "value": "={{ $env.GOOGLE_SHEET_ID }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "value": "Leads",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Follow-up Count": "2",
+            "Follow-up 2 At": "={{ new Date().toISOString() }}",
+            "Status": "Follow-up Complete"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "804ab9b4-92e9-452d-b321-d4e8a5c4be03",
+      "name": "📊 Sheets: Log Follow-up 2 Complete",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5X1xhw7ezqEBN9fh",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "notes": "Final update after 2 follow-ups with no reply.\nStatus → 'Follow-up Complete'\nSequence is now finished for this lead."
+    },
+    {
+      "parameters": {},
+      "id": "441badef-1906-4a22-9547-7e4442b5ec6e",
+      "name": "⚡ Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4624,
+        480
+      ],
+      "notes": "Fires when ANY node in this workflow throws an error.\n\nTo enable:\n1. Go to Workflow Settings\n2. Set 'Error Workflow' to this same workflow\n3. This Error Trigger will catch all failures\n\nReceives: executionId, errorMessage, failedNode, workflow name"
+    },
+    {
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst msg  = (err.execution?.error?.message || '').toLowerCase();\nconst node = err.execution?.lastNodeExecuted || 'unknown';\n\nlet errorType = 'GENERAL_ERROR';\nlet severity  = 'HIGH';\nlet fix = 'Check n8n execution logs.';\n\nif (msg.includes('validation') || msg.includes('invalid')) {\n  errorType = 'VALIDATION_ERROR'; severity = 'LOW';\n  fix = 'Bad lead data submitted. Check form validation on website.';\n} else if (msg.includes('openai') || msg.includes('429') || msg.includes('quota')) {\n  errorType = 'OPENAI_QUOTA'; severity = 'MEDIUM';\n  fix = 'OpenAI rate limit or quota exceeded. Check API key balance.';\n} else if (msg.includes('sheets') || node.includes('Sheets')) {\n  errorType = 'SHEETS_ERROR'; severity = 'HIGH';\n  fix = 'Google Sheets API error. Check OAuth credentials and sheet ID.';\n} else if (msg.includes('gmail') || node.includes('Gmail')) {\n  errorType = 'EMAIL_SEND_FAILURE'; severity = 'HIGH';\n  fix = 'Gmail OAuth credential expired. Refresh in n8n Credentials.';\n} else if (msg.includes('telegram')) {\n  errorType = 'NOTIFICATION_FAILURE'; severity = 'LOW';\n  fix = 'Telegram bot error. Check bot token and chat ID.';\n}\n\nreturn [{\n  json: {\n    timestamp:    new Date().toISOString(),\n    executionId:  err.execution?.id,\n    failedNode:   node,\n    errorType, errorMessage: err.execution?.error?.message,\n    severity, fix,\n    workflowName: err.workflow?.name,\n  }\n}];"
+      },
+      "id": "1dfc0904-6fcf-4b36-b690-63e281b31439",
+      "name": "🔍 Classify Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4400,
+        480
+      ],
+      "notes": "Classifies the error type:\n- VALIDATION_ERROR: bad input data\n- OPENAI_QUOTA: API rate limit\n- SHEETS_ERROR: Google Sheets API\n- EMAIL_SEND_FAILURE: Gmail issue\n- NOTIFICATION_FAILURE: Telegram\n\nEach gets severity level and a fix suggestion."
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "value": "={{ $env.GOOGLE_SHEET_ID }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "value": "ErrorLogs",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.timestamp }}",
+            "Execution ID": "={{ $json.executionId }}",
+            "Failed Node": "={{ $json.failedNode }}",
+            "Error Type": "={{ $json.errorType }}",
+            "Error Message": "={{ $json.errorMessage }}",
+            "Severity": "={{ $json.severity }}",
+            "Fix": "={{ $json.fix }}"
+          },
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "9ca296c1-8b2b-4a7f-bd34-858c8a65d626",
+      "name": "📊 Sheets: Log Error",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -4176,
+        480
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5X1xhw7ezqEBN9fh",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "continueOnFail": true,
+      "notes": "Logs error to 'ErrorLogs' sheet tab.\nProvides permanent audit trail.\ncontinueOnFail: true — if Sheets fails, still send Telegram alert."
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "=🚨 *Workflow Error*\n\n⚠️ *Type:* {{ $json.errorType }}\n📍 *Node:* {{ $json.failedNode }}\n🔴 *Severity:* {{ $json.severity }}\n❌ {{ $json.errorMessage }}\n💡 *Fix:* {{ $json.fix }}\n🆔 Exec: `{{ $json.executionId }}`",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "3dbd8a8b-ac6c-4be7-b5e4-b75c948feb6c",
+      "name": "📱 Telegram: Error Alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -3968,
+        480
+      ],
+      "webhookId": "fba1d8f2-428d-4c6a-b5c3-1bb4a9c118e0",
+      "notes": "Sends immediate Telegram alert on any error.\nIncludes error type, failed node, and fix suggestion."
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "📥 Lead Intake Webhook": {
+      "main": [
+        [
+          {
+            "node": "🧹 Validate & Clean Lead Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧹 Validate & Clean Lead Data": {
+      "main": [
+        [
+          {
+            "node": "🔍 Google Sheets: Duplicate Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Google Sheets: Duplicate Check": {
+      "main": [
+        [
+          {
+            "node": "🔀 IF: New Lead (Not Duplicate)?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 IF: New Lead (Not Duplicate)?": {
+      "main": [
+        [
+          {
+            "node": "🤖 OpenAI: Score + Personalise Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "⛔ Duplicate: Acknowledge & Stop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 OpenAI: Score + Personalise Email": {
+      "main": [
+        [
+          {
+            "node": "🔧 Parse AI Response + Add Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔧 Parse AI Response + Add Calendar": {
+      "main": [
+        [
+          {
+            "node": "📊 Google Sheets: Add Lead Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📊 Google Sheets: Add Lead Row": {
+      "main": [
+        [
+          {
+            "node": "📧 Gmail: Send Initial Outreach",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📧 Gmail: Send Initial Outreach": {
+      "main": [
+        [
+          {
+            "node": "📊 Sheets: Update Status → Contacted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📊 Sheets: Update Status → Contacted": {
+      "main": [
+        [
+          {
+            "node": "📱 Telegram: New Lead Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📱 Telegram: New Lead Alert": {
+      "main": [
+        [
+          {
+            "node": "✅ Webhook: Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Webhook: Success Response": {
+      "main": [
+        [
+          {
+            "node": "⏳ Wait: 3 Days (Follow-up 1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏳ Wait: 3 Days (Follow-up 1)": {
+      "main": [
+        [
+          {
+            "node": "🔍 Sheets: Check Reply Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Sheets: Check Reply Status": {
+      "main": [
+        [
+          {
+            "node": "🔀 IF: No Reply Yet? (FU1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 IF: No Reply Yet? (FU1)": {
+      "main": [
+        [
+          {
+            "node": "🤖 AI: Generate Follow-up 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 AI: Generate Follow-up 1": {
+      "main": [
+        [
+          {
+            "node": "🔧 Parse Follow-up 1 Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔧 Parse Follow-up 1 Email": {
+      "main": [
+        [
+          {
+            "node": "📧 Gmail: Send Follow-up 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📧 Gmail: Send Follow-up 1": {
+      "main": [
+        [
+          {
+            "node": "📊 Sheets: Log Follow-up 1 Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📊 Sheets: Log Follow-up 1 Sent": {
+      "main": [
+        [
+          {
+            "node": "⏳ Wait: 3 More Days (Follow-up 2)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏳ Wait: 3 More Days (Follow-up 2)": {
+      "main": [
+        [
+          {
+            "node": "🔍 Sheets: Check Reply (Pre FU2)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Sheets: Check Reply (Pre FU2)": {
+      "main": [
+        [
+          {
+            "node": "🔀 IF: Still No Reply? (FU2)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 IF: Still No Reply? (FU2)": {
+      "main": [
+        [
+          {
+            "node": "🤖 AI: Generate Follow-up 2 (Final)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 AI: Generate Follow-up 2 (Final)": {
+      "main": [
+        [
+          {
+            "node": "🔧 Parse Follow-up 2 Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔧 Parse Follow-up 2 Email": {
+      "main": [
+        [
+          {
+            "node": "📧 Gmail: Send Follow-up 2 (Final)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📧 Gmail: Send Follow-up 2 (Final)": {
+      "main": [
+        [
+          {
+            "node": "📊 Sheets: Log Follow-up 2 Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚡ Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "🔍 Classify Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Classify Error": {
+      "main": [
+        [
+          {
+            "node": "📊 Sheets: Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📊 Sheets: Log Error": {
+      "main": [
+        [
+          {
+            "node": "📱 Telegram: Error Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "855700a8-0822-4e5a-b0be-7984a8da67af",
+  "meta": {
+    "instanceId": "ab28bd0f45f75f9f6c0dc92d7cbbb170c6ea30db8577ebc0881fa6208e4abb76"
+  },
+  "id": "pnQ9xZcgGlnbrxW5",
+  "tags": [
+    {
+      "updatedAt": "2026-03-23T03:33:17.397Z",
+      "createdAt": "2026-03-23T03:33:17.397Z",
+      "id": "oHKKYgNiQCxFoyHQ",
+      "name": "lead genaration"
+    }
+  ]
+}
