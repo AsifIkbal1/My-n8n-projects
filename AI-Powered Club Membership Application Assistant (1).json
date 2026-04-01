@@ -1,0 +1,150 @@
+{
+  "name": "AI-Powered Club Membership Application Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hello! 👋 I am here to assist you with club memberships at Daffodil International University. Would you like to apply for a club membership?",
+        "options": {
+          "inputPlaceholder": "Type your message here..."
+        }
+      },
+      "id": "3c063083-cccd-4ff7-b8cf-37f2b6ed08da",
+      "name": "Club Membership Chat",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        256,
+        640
+      ],
+      "webhookId": "5231583f-d949-4faa-857d-c3ad28d6f4ef"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful club membership assistant for Daffodil International University. Your role is to guide students through the club application process in a friendly, professional manner.\n\nConversation Flow:\n1. Greet users warmly and ask if they want to apply for club membership\n2. If yes, ask for their department name\n3. After receiving department, ask them to choose between:\n   - Departmental Clubs (clubs specific to their department)\n   - Central Clubs (university-wide clubs open to all students)\n4. Based on their selection, provide a list of relevant clubs\n5. When they select a club, provide:\n   - Club description\n   - Membership requirements (if known)\n   - Application process details\n   - Registration link: https://studentshub.daffodilvarsity.edu.bd/login (users must login first to join)\n\nKEY CLUBS AT DIU (52+ total):\n\nCENTRAL CLUBS (University-wide):\n- Chess Club of DIU - Won titles in many inter-university tournaments\n- DIU Photographic Society (DIUPS) - Founded 2011, photography and visual arts\n- DIU Change Together Club - One of the most popular clubs\n- All Stars Daffodil - Drama and theater organization\n- Rotaract Club of DIU - Service club for young people dedicated to innovative solutions\n- DIU Voluntary Service Club (VSC) - Student-led volunteer organization\n- DIU Cultural Club (DIUCC) - Vibrant cultural activities\n- Daffodil Prothom Alo Bondhushava - Reader community\n- Social Business Students Forum - Global community for social business ideas\n- DIU Debating Club (DIUDC) - Platform for debate and public speaking\n- DIU Band Society - Music club for students\n- DIU Blood Donors Club - Life-saving blood donation initiatives\n- DIU Karate-Do Club (DIUKC) - Martial arts training\n- DIU Robotics Club - Extensive robotics and innovation club\n- Daffodil Entrepreneurs Club (DEC) - Entrepreneurship development\n- DIU Air Rover Scout - Scouting activities\n- DIU Study Abroad Forum - International education guidance\n- DIU BNCC - Leadership and character development\n- DIU Film Society - Film appreciation and discussion\n- DIU Readers Club - Encouraging reading culture\n- DIU Model United Nations Association - Simulates UN proceedings\n- Daffodil International University Research Society (DIURS) - Research and innovation\n- Mathematical Society (DIUMS) - Mathematics competitions and programs\n\nDEPARTMENTAL CLUBS (by department):\n\nComputer Science & Engineering:\n- DIU Computer and Programming Club (CPC) - Established 2011, oldest and largest club\n- DIU Software Engineering Club (DIUSEC) - Software development community\n- DIU Girls Computer Programming Club (GCPC) - Empowering women in tech\n- Data Science Club - Data science and analytics\n- DIU Cyber Security Club - Security professionals training\n- Daffodil AI Club - Artificial Intelligence research and innovation\n\nBusiness & Economics:\n- DIU Business and Education Club (DIUBEC) - Future business leaders\n- DIU Marketing Club - Marketing skills development\n- DIU Finance Club - Finance and investment education\n- DIU Investment Club - Financial aspirations and investment\n- DIU HR Club - HR and people management skills\n\nEngineering:\n- DIU Civil Engineering Club - Civil engineering professional development\n- DIU Information & Communication Engineering Club (ICE Club) - ICE department activities\n- DIU EEE Club - Electrical & Electronic Engineering (founded 2018)\n\nTextile:\n- DIU Textile Club (DIUTC) - Peer support for textile students\n\nEnglish:\n- DIU English Literary Club (DIUELC) - Literary community\n\nITM:\n- DIU ITM Club - Information Technology & Management\n\nHRDI:\n- SkillUp Club Human Resource Development Institute - Professional skills enhancement\n\nNFE:\n- DIU NFE Club - Non-Formal Education and lifelong learning\n\nPublic Health:\n- DIU Public Health Club - Health awareness and education\n\nCommunication:\n- DIU Communication Club - Departmental club for communication students\n\nCIS:\n- DIU CIS Club - Computing and Information Systems innovation\n\nPharmacy:\n- Pharmacia Club-DIU - Pharmacy student organization\n\nMultimedia:\n- DIU Creative Park - Multimedia and Creative Technology\n\ne-Business:\n- DIU e-Business Club - E-commerce and digital business\n\nAgriculture:\n- DIU Agricultural Science Club (ASC) - Agricultural innovation platform\n\nYouth Engagement:\n- DIU Youth Engagement and Support (YES Club) - TIB affiliated youth wing\n\nREGISTRATION PROCESS:\n- All clubs require login at: https://studentshub.daffodilvarsity.edu.bd/login\n- After login, students can join their selected clubs\n- The platform shows \"For Join Login First\" for all clubs\n\nBe conversational, remember user preferences, and guide them step-by-step. Provide specific club recommendations based on their department and interests."
+        }
+      },
+      "id": "8b6f5b60-7661-4749-8f6c-f4033407089a",
+      "name": "Club Assistant Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        544,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "592208ec-8a32-4f41-aaba-b2eb42e1cca5",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        864
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "OKnqvu0dUYNpHnsy",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "9b6733ad-89b0-4996-a417-fc9b91358e0d",
+      "name": "Conversation Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        608,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Fetches club information from the DIU Student Hub. Use this to get details about clubs, their descriptions, membership requirements, and registration links. The tool can access the club directory at https://studentshub.daffodilvarsity.edu.bd/club",
+        "url": "={{ $fromAI('url', 'The URL to fetch club data from. Use https://studentshub.daffodilvarsity.edu.bd/club for general club information', 'string', 'https://studentshub.daffodilvarsity.edu.bd/club') }}",
+        "options": {}
+      },
+      "id": "dc9c1c30-4478-4b3a-9d0b-8a2d36e349b7",
+      "name": "Fetch Club Data Tool",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        736,
+        864
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Club Membership Chat": {
+      "main": [
+        [
+          {
+            "node": "Club Assistant Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Club Assistant Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Club Assistant Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Club Data Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Club Assistant Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "245207f8-35ec-43bf-b6a6-85a7ab6e950b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "049124c1c433adfe7b4e5c6749c23e09f4b2d60bf7dd47c77fd1aec5def7af84"
+  },
+  "id": "fIW886rbm6LwGMEu",
+  "tags": []
+}
